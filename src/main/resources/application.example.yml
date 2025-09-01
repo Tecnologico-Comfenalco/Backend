@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: Proyecto de Aula
+  datasource:
+    url: # jdbc:postgresql://localhost:5432/db_pa
+    username: # postgres
+    password: # 12345678
+    driver-class-name: # org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
