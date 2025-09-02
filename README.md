@@ -69,6 +69,11 @@ spring:
 ### Ejecutar la Aplicación
 
 ```bash
+# Copiar plantilla de configuracion a archivo de configuracion de aplicación
+cd pa/src/main/resources
+
+cp application.example.yml application.yml
+
 # Construir el proyecto
 .\mvnw.cmd clean install
 
