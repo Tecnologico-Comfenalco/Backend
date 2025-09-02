@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-This is a Spring Boot backend for a university project, organized by business domains under `src/main/java/com/tecno_comfenalco/pa/`. Major modules include `catalogos`, `distribuidoras`, `entregadores`, `pedidos`, `productos`, `proveedores`, `rutas`, and `tiendas`. The main entry point is `ProyectoDeAulaApplication.java`.
+This is a Spring Boot backend for a university project, organized by business domains under `src/main/java/com/tecno_comfenalco/pa/`. Each domain (e.g., `catalogos`, `distribuidoras`, `entregadores`, `pedidos`, `productos`, `proveedores`, `rutas`, `tiendas`) is further split into `features`, with subfolders for repositories (MongoDB and PostgreSQL), services, controllers, entities, and DTOs. The main entry point is `ProyectoDeAulaApplication.java`.
 
 ## Architecture & Data Flow
 
 - Follows standard Spring Boot layered architecture: Controller → Service → Repository.
-- Each domain folder contains its own models, controllers, and services.
+- Each domain/feature folder contains its own models, controllers, services, and DTOs. Repositories are split by database type (`mongo` and `postgres`).
 - Database configuration is managed via `application.yml` in `src/main/resources`. Use environment variables for sensitive data (see below).
-- Uses PostgreSQL as the database backend.
+- Supports both PostgreSQL and MongoDB, with separate configuration files (`application-postgres.yml`, `application-mongo.yml`) and repository interfaces for each DB.
 
 ## Developer Workflows
 
@@ -26,8 +26,8 @@ This is a Spring Boot backend for a university project, organized by business do
 
 ## Integration Points
 
-- **Database:** PostgreSQL, configured via JDBC in `application.yml`.
-- **External Libraries:** Standard Spring Boot dependencies, Hibernate for JPA.
+- **Database:** PostgreSQL (JPA/Hibernate) and MongoDB (Spring Data Mongo), configured via separate YAML files and repository interfaces.
+- **External Libraries:** Standard Spring Boot dependencies, Hibernate for JPA, Spring Data MongoDB.
 
 ## Examples
 
@@ -48,6 +48,10 @@ This is a Spring Boot backend for a university project, organized by business do
 
 - `src/main/java/com/tecno_comfenalco/pa/` — Main source code, organized by domain
 - `src/main/resources/application.yml` — Central configuration
+- `src/main/resources/application-postgres.yml` — PostgreSQL config
+- `src/main/resources/application-mongo.yml` — MongoDB config
+- `src/main/java/com/tecno_comfenalco/pa/features/` — Feature modules, each with subfolders for repository, service, controller, entity, dto
+- `src/main/java/com/tecno_comfenalco/pa/security/` — Security config, DTOs, and user domain
 - `mvnw`, `mvnw.cmd` — Maven wrapper scripts
 - `pom.xml` — Maven project descriptor
 
