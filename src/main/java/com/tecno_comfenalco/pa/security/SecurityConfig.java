@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 import com.tecno_comfenalco.pa.security.filters.JwtCustomFilter;
 
@@ -43,7 +44,18 @@ public class SecurityConfig {
                 // Deshabilita CSRF, que no es necesario para APIs sin estado
                 .csrf(AbstractHttpConfigurer::disable)
                 // Deshabilita CORS
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(t -> t.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowCredentials(true);
+                    config.addAllowedOrigin("http://localhost:8080");
+                    config.addAllowedOrigin("http://localhost:4000");
+                    config.addAllowedOrigin("http://localhost:4200");
+                    config.addAllowedOrigin("null"); // 💡 Añade 'null' para permitir peticiones desde about:blank o
+                                                     // archivos locales
+                    config.addAllowedHeader("*");
+                    config.addAllowedMethod("*");
+                    return config;
+                }))
                 // Establece la politica de sesion como sin estado
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
