@@ -29,7 +29,21 @@ public class UserSeederCommand implements CommandLineRunner {
                 .roles(Set.of("ROLE_ADMIN"))
                 .build());
 
-        System.out.println("User seeded");
+        userRepository.save(UserEntity.builder()
+                .username("presales")
+                .password(passwordEncoder.encode("password"))
+                .enabled(true)
+                .roles(Set.of("ROLE_PRESALES"))
+                .build());
+
+        userRepository.save(UserEntity.builder()
+                .username("distributor")
+                .password(passwordEncoder.encode("password"))
+                .enabled(true)
+                .roles(Set.of("ROLE_DISTRIBUTOR"))
+                .build());
+
+        System.out.println("🟩____Users seeded____🟩");
     }
 
 }

@@ -38,7 +38,11 @@ public class JwtCustomFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtils.decode(token);
+            try {
+                username = jwtUtils.decode(token);
+            } catch (Exception e) {
+                System.out.println("Invalid JWT: " + e.getMessage());
+            }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
