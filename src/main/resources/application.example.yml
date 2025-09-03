@@ -7,3 +7,6 @@ spring:
 server:
   servlet:
     context-path: /api
+jwt:
+  secret: a-very-long-and-secure-secret-key-for-jwt-that-is-at-least-256-bits-long
+  expiration-ms: 3600000 # 1 hour

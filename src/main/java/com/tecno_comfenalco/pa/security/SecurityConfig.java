@@ -13,6 +13,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.tecno_comfenalco.pa.security.filters.JwtCustomFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -21,6 +24,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    private JwtCustomFilter jwtCustomFilter;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
@@ -40,6 +46,9 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 // Establece la politica de sesion como sin estado
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        httpSecurity.addFilterBefore(jwtCustomFilter, UsernamePasswordAuthenticationFilter.class);
+
         return httpSecurity.build();
     }
 
