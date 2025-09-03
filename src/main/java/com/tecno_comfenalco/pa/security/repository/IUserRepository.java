@@ -10,4 +10,6 @@ import com.tecno_comfenalco.pa.security.domain.UserEntity;
 @NoRepositoryBean
 public interface IUserRepository extends Repository<UserEntity, Long> {
     Optional<UserEntity> findByUsername(String username);
+
+    Optional<UserEntity> findById(Long id);
 }

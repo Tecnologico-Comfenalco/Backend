@@ -21,7 +21,7 @@ import lombok.Data;
 @Table(name = "users")
 
 @Data
-public class UserEntity implements UserDetails {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,32 +32,5 @@ public class UserEntity implements UserDetails {
 
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> roles;
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true; // Devuelve true si la cuenta no ha expirado
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true; // Devuelve true si la cuenta no está bloqueada
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true; // Devuelve true si las credenciales no han expirado
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return this.enabled; // Devuelve true si la cuenta está habilitada
-    }
 
 }
