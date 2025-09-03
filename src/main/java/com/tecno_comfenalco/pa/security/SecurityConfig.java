@@ -31,10 +31,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .authorizeHttpRequests(auth -> auth
-                        // Define tus rutas publicas aqui
-                        .requestMatchers("/api/auth/**", "/public/**").permitAll()
-                        .anyRequest().authenticated())
                 .userDetailsService(customUserDetailsService)
                 // Deshabilita la autenticacion con formulario
                 .formLogin(AbstractHttpConfigurer::disable)

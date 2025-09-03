@@ -30,7 +30,9 @@ public class AuthController {
                 .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
         return ResponseEntity.ok(
-                new LoginResponseDto(authentication.getName() + " logged in successfully", "dummy-token", "user-id"));
+                new LoginResponseDto(authentication.getName() + " logged in successfully", "dummy-token",
+                        authentication.getAuthorities().stream().map(auth -> auth.getAuthority())
+                                .collect(java.util.stream.Collectors.toSet())));
     }
 
 }

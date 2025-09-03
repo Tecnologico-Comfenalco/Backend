@@ -12,4 +12,6 @@ public interface IUserRepository extends Repository<UserEntity, Long> {
     Optional<UserEntity> findByUsername(String username);
 
     Optional<UserEntity> findById(Long id);
+
+    UserEntity save(UserEntity user);
 }

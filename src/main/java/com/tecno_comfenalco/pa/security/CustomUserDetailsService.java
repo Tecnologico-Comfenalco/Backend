@@ -28,4 +28,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomUserDetails(userEntity);
     }
 
+    // Registrar nuevo usuario
+    public UserDetails registerUser(UserEntity userEntity) {
+        UserEntity savedUser = userRepository.save(userEntity);
+        return new CustomUserDetails(savedUser);
+    }
+
 }
