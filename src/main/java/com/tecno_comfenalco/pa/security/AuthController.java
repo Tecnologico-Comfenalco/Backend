@@ -41,13 +41,18 @@ public class AuthController {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
-        String token = jwtUtils.encode(authentication.getName());
+        String token = jwtUtils.encode(authentication.getName(),
+                request.rememberMe() ? 7 * 24 * 60 * 60 * 1000L : expirationMs);
 
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
 
-        cookie.setMaxAge(expirationMs.intValue() / 1000);
+        if (request.rememberMe()) {
+            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+        } else {
+            cookie.setMaxAge(expirationMs.intValue() / 1000); // default 1hr expiration
+        }
 
         response.addCookie(cookie);
 

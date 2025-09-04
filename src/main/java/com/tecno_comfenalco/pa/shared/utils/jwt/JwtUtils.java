@@ -37,6 +37,13 @@ public class JwtUtils {
         return Jwts.builder().subject(payload).issuedAt(now).expiration(expiration).signWith(key).compact();
     }
 
+    public String encode(String payload, Long customExpirationMs) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + customExpirationMs);
+
+        return Jwts.builder().subject(payload).issuedAt(now).expiration(expiration).signWith(key).compact();
+    }
+
     // method for decode JWT
     public String decode(String token) {
 
