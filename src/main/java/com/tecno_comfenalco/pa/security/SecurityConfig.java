@@ -37,8 +37,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .userDetailsService(customUserDetailsService)
+        httpSecurity.userDetailsService(customUserDetailsService)
                 // Deshabilita la autenticacion con formulario
                 .formLogin(AbstractHttpConfigurer::disable)
                 // Deshabilita CSRF, que no es necesario para APIs sin estado

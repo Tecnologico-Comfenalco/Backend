@@ -34,22 +34,14 @@ public class JwtUtils {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
 
-        return Jwts.builder()
-                .subject(payload)
-                .issuedAt(now)
-                .expiration(expiration)
-                .signWith(key)
-                .compact();
+        return Jwts.builder().subject(payload).issuedAt(now).expiration(expiration).signWith(key).compact();
     }
 
     // method for decode JWT
     public String decode(String token) {
 
         try {
-            Jws<Claims> jws = Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token);
+            Jws<Claims> jws = Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
 
             // We get the subject from the payload
             return jws.getPayload().getSubject();
@@ -64,10 +56,7 @@ public class JwtUtils {
             return false;
         }
         try {
-            Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token);
+            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (Exception e) {
             // You can log the exception here if you want

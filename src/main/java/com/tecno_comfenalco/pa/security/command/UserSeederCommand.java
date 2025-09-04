@@ -13,37 +13,27 @@ import com.tecno_comfenalco.pa.security.repository.IUserRepository;
 @Component
 public class UserSeederCommand implements CommandLineRunner {
 
-    @Autowired
-    private IUserRepository userRepository;
+        @Autowired
+        private IUserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+        @Autowired
+        private PasswordEncoder passwordEncoder;
 
-    @Override
-    public void run(String... args) throws Exception {
-        // Seed initial users
-        userRepository.save(UserEntity.builder()
-                .username("admin")
-                .password(passwordEncoder.encode("password"))
-                .enabled(true)
-                .roles(Set.of("ROLE_ADMIN"))
-                .build());
+        @Override
+        public void run(String... args) throws Exception {
+                // Seed initial users
+                userRepository.save(UserEntity.builder().username("admin").password(passwordEncoder.encode("password"))
+                                .enabled(true).roles(Set.of("ROLE_ADMIN")).build());
 
-        userRepository.save(UserEntity.builder()
-                .username("presales")
-                .password(passwordEncoder.encode("password"))
-                .enabled(true)
-                .roles(Set.of("ROLE_PRESALES"))
-                .build());
+                userRepository.save(
+                                UserEntity.builder().username("presales").password(passwordEncoder.encode("password"))
+                                                .enabled(true).roles(Set.of("ROLE_PRESALES")).build());
 
-        userRepository.save(UserEntity.builder()
-                .username("distributor")
-                .password(passwordEncoder.encode("password"))
-                .enabled(true)
-                .roles(Set.of("ROLE_DISTRIBUTOR"))
-                .build());
+                userRepository.save(UserEntity.builder().username("distributor")
+                                .password(passwordEncoder.encode("password")).enabled(true)
+                                .roles(Set.of("ROLE_DISTRIBUTOR")).build());
 
-        System.out.println("🟩____Users seeded____🟩");
-    }
+                System.out.println("🟩____Users seeded____🟩");
+        }
 
 }

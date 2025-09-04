@@ -3,7 +3,6 @@ package com.tecno_comfenalco.pa.security.filters;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -61,8 +60,7 @@ public class JwtCustomFilter extends OncePerRequestFilter {
 
             if (jwtUtils.validate(token)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                        null,
-                        userDetails.getAuthorities());
+                        null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
