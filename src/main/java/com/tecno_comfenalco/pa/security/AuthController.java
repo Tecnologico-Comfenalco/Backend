@@ -37,22 +37,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request, HttpServletResponse response) {
+        Long expirationTime = request.rememberMe() ? 7 * 24 * 60 * 60 * 1000L : expirationMs;
 
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
-        String token = jwtUtils.encode(authentication.getName(),
-                request.rememberMe() ? 7 * 24 * 60 * 60 * 1000L : expirationMs);
+        String token = jwtUtils.encode(authentication.getName(), expirationTime);
 
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
 
-        if (request.rememberMe()) {
-            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-        } else {
-            cookie.setMaxAge(expirationMs.intValue() / 1000); // default 1hr expiration
-        }
+        cookie.setMaxAge(expirationTime.intValue() / 1000); // Convert milliseconds to seconds
 
         response.addCookie(cookie);
 
