@@ -1,8 +1,8 @@
-package com.tecno_comfenalco.pa.features.pedidos;
+package com.tecno_comfenalco.pa.features.rutas;
 
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class OrderController {
+public class RoutesController {
 
 }
