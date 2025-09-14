@@ -1,3 +1,5 @@
+oeeeeeeeeeeeeeeeeeeeeeeeeeeee
+
 # Proyecto de Aula - Backend
 
 Este es el backend de un proyecto universitario del cuarto semestre desarrollado en Spring Boot, diseñado para gestionar un sistema de distribución con múltiples entidades de negocio.
