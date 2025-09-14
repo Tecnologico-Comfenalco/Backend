@@ -8,5 +8,5 @@ import com.tecno_comfenalco.pa.features.comprobantes.repository.IPaymentReceiptR
 @Service
 public class PaymentReceiptService {
     @Autowired
-    private IPaymentReceiptRepository sellRepository;
+    private IPaymentReceiptRepository paymentReceiptRepository;
 }
