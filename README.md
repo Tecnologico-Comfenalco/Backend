@@ -18,6 +18,8 @@ El proyecto está organizado por **features/dominios de negocio** bajo `src/main
 - **tiendas** - Administración de tiendas
 - **security** - Autenticación y autorización
 
+juan romero
+
 ### Patrón de Capas
 
 Cada feature sigue la arquitectura estándar de Spring Boot:
