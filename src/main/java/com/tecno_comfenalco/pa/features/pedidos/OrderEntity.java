@@ -1,5 +1,6 @@
 package com.tecno_comfenalco.pa.features.pedidos;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.tecno_comfenalco.pa.features.comprobantes.PaymentReceiptEntity;
@@ -38,5 +39,5 @@ public class OrderEntity {
 
     @ManyToMany
     @JoinTable(name = "order_product", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
-    private ProductEntity products;
+    private List<ProductEntity> products;
 }

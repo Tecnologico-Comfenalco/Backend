@@ -1,5 +1,6 @@
 package com.tecno_comfenalco.pa.features.productos;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.tecno_comfenalco.pa.features.pedidos.OrderEntity;
@@ -14,7 +15,7 @@ import jakarta.persistence.ManyToMany;
 
 @Entity
 public class ProductEntity {
-    private enum Unit {
+    public static enum Unit {
         UNIT, KILOGRAM, LITER, METER, PACK, BOX
     }
 
@@ -29,5 +30,5 @@ public class ProductEntity {
     private Unit unit;
 
     @ManyToMany(mappedBy = "products")
-    private OrderEntity orders;
+    private List<OrderEntity> orders;
 }
