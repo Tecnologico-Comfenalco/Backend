@@ -25,7 +25,7 @@ public class OrderEntity {
     private UUID id;
 
     private Double iva_percent;
-    private Double price;
+    private Double total;
     private Integer quantity;
 
     @ManyToOne
