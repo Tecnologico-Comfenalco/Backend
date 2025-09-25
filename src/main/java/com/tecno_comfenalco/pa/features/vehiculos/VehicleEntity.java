@@ -1,9 +1,16 @@
 package com.tecno_comfenalco.pa.features.vehiculos;
 
+import java.util.List;
+
+import com.tecno_comfenalco.pa.features.entregadores.DeliveryEntity;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 public class VehicleEntity {
@@ -14,4 +21,8 @@ public class VehicleEntity {
     private String vehiclePlate;
     private String model;
     private String brand;
+
+    @ManyToMany
+    @JoinTable(name = "vehicle_delivery", joinColumns = @JoinColumn(name = "vehicle_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "delivery_id", referencedColumnName = "id"))
+    private List<DeliveryEntity> deliveries;
 }
