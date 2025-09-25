@@ -4,20 +4,21 @@ import java.util.List;
 import java.util.UUID;
 
 import com.tecno_comfenalco.pa.features.comprobantes.PaymentReceiptEntity;
-import com.tecno_comfenalco.pa.features.productos.ProductEntity;
 import com.tecno_comfenalco.pa.features.proveedores.PresalesEntity;
 import com.tecno_comfenalco.pa.features.tiendas.StoreEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "orders")
 public class OrderEntity {
 
     @Id
@@ -26,18 +27,16 @@ public class OrderEntity {
 
     private Double iva_percent;
     private Double total;
-    private Integer quantity;
 
     @ManyToOne
+    @JoinColumn(name = "store_id", referencedColumnName = "id", nullable = false)
     private StoreEntity store;
 
     @ManyToOne
+    @JoinColumn(name = "presales_id", referencedColumnName = "id")
     private PresalesEntity presales;
 
-    @ManyToOne
-    private PaymentReceiptEntity paymentReceipt;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderDetailEntity> orderDetails;
 
-    @ManyToMany
-    @JoinTable(name = "order_product", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
-    private List<ProductEntity> products;
 }
