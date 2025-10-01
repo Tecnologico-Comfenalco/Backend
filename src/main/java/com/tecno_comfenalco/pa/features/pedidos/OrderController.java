@@ -1,8 +1,0 @@
-package com.tecno_comfenalco.pa.features.pedidos;
-
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class OrderController {
-
-}
