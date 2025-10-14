@@ -3,7 +3,6 @@ package com.tecno_comfenalco.pa.features.order;
 import java.util.List;
 import java.util.UUID;
 
-import com.tecno_comfenalco.pa.features.payment_receipt.PaymentReceiptEntity;
 import com.tecno_comfenalco.pa.features.presales.PresalesEntity;
 import com.tecno_comfenalco.pa.features.store.StoreEntity;
 

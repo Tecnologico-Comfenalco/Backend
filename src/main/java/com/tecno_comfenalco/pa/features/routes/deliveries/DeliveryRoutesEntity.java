@@ -1,7 +1,7 @@
 package com.tecno_comfenalco.pa.features.routes.deliveries;
 
 import com.tecno_comfenalco.pa.features.delivery.DeliveryEntity;
-import com.tecno_comfenalco.pa.features.payment_receipt.PaymentReceiptEntity;
+import com.tecno_comfenalco.pa.features.order.OrderEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +19,7 @@ public class DeliveryRoutesEntity {
 
     @OneToOne
     @JoinColumn(name = "payment_receipt_id", referencedColumnName = "id")
-    private PaymentReceiptEntity paymentReceipt;
+    private OrderEntity orderEntity;
 
     @ManyToOne
     @JoinColumn(name = "delivery_id", referencedColumnName = "id", nullable = true, unique = false)
