@@ -2,7 +2,7 @@ package com.tecno_comfenalco.pa.features.delivery;
 
 import java.util.List;
 
-import com.tecno_comfenalco.pa.features.deliveryroutes.entregadores.DeliveryRoutesEntity;
+import com.tecno_comfenalco.pa.features.routes.deliveries.DeliveryRoutesEntity;
 import com.tecno_comfenalco.pa.security.domain.UserEntity;
 import com.tecno_comfenalco.pa.shared.enums.DocumentTypeEnum;
 

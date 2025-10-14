@@ -1,4 +1,4 @@
-package com.tecno_comfenalco.pa.features.paymentrecipt;
+package com.tecno_comfenalco.pa.features.payment_receipt;
 
 import com.tecno_comfenalco.pa.features.order.OrderEntity;
 import com.tecno_comfenalco.pa.features.store.StoreEntity;

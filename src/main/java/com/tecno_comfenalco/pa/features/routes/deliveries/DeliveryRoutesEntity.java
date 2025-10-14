@@ -1,7 +1,7 @@
-package com.tecno_comfenalco.pa.features.deliveryroutes.entregadores;
+package com.tecno_comfenalco.pa.features.routes.deliveries;
 
 import com.tecno_comfenalco.pa.features.delivery.DeliveryEntity;
-import com.tecno_comfenalco.pa.features.paymentrecipt.PaymentReceiptEntity;
+import com.tecno_comfenalco.pa.features.payment_receipt.PaymentReceiptEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

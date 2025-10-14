@@ -1,4 +1,4 @@
-package com.tecno_comfenalco.pa.features.deliveryroutes.repository;
+package com.tecno_comfenalco.pa.features.routes.repository;
 
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;

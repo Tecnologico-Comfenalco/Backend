@@ -1,10 +1,10 @@
-package com.tecno_comfenalco.pa.features.paymentrecipt.repository.mongo;
+package com.tecno_comfenalco.pa.features.payment_receipt.repository.mongo;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.tecno_comfenalco.pa.features.paymentrecipt.PaymentReceiptEntity;
-import com.tecno_comfenalco.pa.features.paymentrecipt.repository.IPaymentReceiptRepository;
+import com.tecno_comfenalco.pa.features.payment_receipt.PaymentReceiptEntity;
+import com.tecno_comfenalco.pa.features.payment_receipt.repository.IPaymentReceiptRepository;
 
 @Profile("mongo")
 public interface IMongoPaymentReceiptRepository
