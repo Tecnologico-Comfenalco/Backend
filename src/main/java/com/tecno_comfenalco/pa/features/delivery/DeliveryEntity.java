@@ -15,8 +15,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "deliveries")
 public class DeliveryEntity {
     public enum LicenseTypeEnum {
         A1, A2, A3, A4, B1, B2, B3, C1, C2, C3, C4, D1, D2, D3, D4

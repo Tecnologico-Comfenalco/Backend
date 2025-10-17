@@ -16,8 +16,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "products")
 public class ProductEntity {
     public static enum Unit {
         UNIT, KILOGRAM, LITER, METER, PACK, BOX
