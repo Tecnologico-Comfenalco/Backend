@@ -13,9 +13,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
 
 @Entity
 @Table(name = "deliveries")
@@ -46,4 +48,8 @@ public class DeliveryEntity {
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
     private UserEntity user;
+
+    @ManyToOne
+    @JoinColumn(name = "distributor_id", referencedColumnName = "id")
+    private DistributorEntity distributor;
 }
