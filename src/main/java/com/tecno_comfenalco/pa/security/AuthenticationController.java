@@ -4,9 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tecno_comfenalco.pa.security.dto.requests.LoginRequestDto;
 import com.tecno_comfenalco.pa.security.dto.responses.LoginResponseDto;
-import com.tecno_comfenalco.pa.shared.utils.jwt.JwtUtils;
+import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,35 +21,41 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping(path = "/auth")
 @PreAuthorize("permitAll()")
-public class AuthController {
+public class AuthenticationController {
 
     @Autowired
-    private JwtUtils jwtUtils;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private AuthenticationService authenticationService;
 
     @Value("${jwt.expiration-ms}")
     private Long expirationMs;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request, HttpServletResponse response) {
-        Long expirationTime = request.rememberMe() ? 7 * 24 * 60 * 60 * 1000L : expirationMs;
+        // Delegate authentication logic to AuthenticationService and keep HTTP handling
+        // here
+        Result<LoginResponseDto, Exception> result = authenticationService.loginUser(request);
 
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        if (result == null || !result.isOk()) {
+            // AuthenticationService returns an error Result with an Exception
+            return ResponseEntity.status(401).body(new LoginResponseDto("Authentication failed", null));
+        }
 
-        String token = jwtUtils.encode(authentication.getName(), expirationTime);
+        LoginResponseDto loginResp = result.getValue();
+
+        // preserve cookie creation behavior from previous implementation
+        long defaultExpiration = 60 * 60 * 1000L; // 1 hour default
+        long configuredExpiration = expirationMs != null ? expirationMs.longValue() : defaultExpiration;
+        long expirationTime = request.rememberMe() ? 7L * 24 * 60 * 60 * 1000 : configuredExpiration;
+        String token = loginResp.token();
 
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
-
-        cookie.setMaxAge(expirationTime.intValue() / 1000); // Convert milliseconds to seconds
+        cookie.setMaxAge((int) (expirationTime / 1000)); // Convert milliseconds to seconds
 
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(new LoginResponseDto(authentication.getName() + " logged in successfully", token));
+        return ResponseEntity.ok(new LoginResponseDto(loginResp.message(), token));
     }
 
     @GetMapping("/test")
