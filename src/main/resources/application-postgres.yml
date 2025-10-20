@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/db_pa
-    username: root
-    password: Dydd6832_*
+    url: jdbc:postgresql://localhost:5432/db_pa
+    username: postgres
+    password: 12345678
   jpa:
     hibernate:
       ddl-auto: create-drop
