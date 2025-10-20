@@ -32,6 +32,7 @@ public class ProductServices {
         }
 
         try {
+            // TODO: Create a mapper for this
             ProductEntity productEntity = new ProductEntity();
             productEntity.setName(dtoProduct.name());
             productEntity.setPrice(dtoProduct.price());
@@ -47,6 +48,7 @@ public class ProductServices {
 
     public Result<EditProductResponseDto, Exception> editProduct(UUID id, EditProductRequestDto dtoProduct) {
         try {
+            // TODO: Create a mapper for this
             return productRepository.findById(id)
                     .map(product -> {
 
@@ -69,6 +71,7 @@ public class ProductServices {
 
     public Result<DisableProductResponseDto, Exception> disabledProduct(UUID id) {
         try {
+            // TODO: Create a mapper for this
             return productRepository.findById(id).map(product -> {
                 productRepository.deleteById(id);
                 return Result.ok(new DisableProductResponseDto("Product deleted succesfull!"));
@@ -82,6 +85,7 @@ public class ProductServices {
     public Result<ListProductsResponseDto, Exception> listProducts() {
         List<ProductEntity> productEntities = productRepository.findAll();
         try {
+            // TODO: Create a mapper for this
             List<ProductDto> productDtos = productEntities.stream().map(product -> new ProductDto(
                     product.getId(),
                     product.getName(),
@@ -99,6 +103,7 @@ public class ProductServices {
     public Result<ProductResponseDto, Exception> showProduct(UUID id) {
         try {
             return productRepository.findById(id).map(product -> {
+                // TODO: Create a mapper for this
                 ProductDto productDto = new ProductDto(
                         product.getId(),
                         product.getName(),
