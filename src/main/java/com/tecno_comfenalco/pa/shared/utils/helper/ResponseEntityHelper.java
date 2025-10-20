@@ -6,10 +6,10 @@ import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 public class ResponseEntityHelper {
 
-    static public <T> ResponseEntity<T> toResponseEntity(Result<T, Exception> result, T successBody, T errorBody) {
+    static public <T> ResponseEntity<T> toResponseEntity(Result<T, Exception> result) {
         if (result == null || !result.isOk()) {
-            return ResponseEntity.status(400).body(errorBody);
+            return (ResponseEntity<T>) ResponseEntity.status(400).body(result != null ? result.getError() : null);
         }
-        return ResponseEntity.ok(successBody);
+        return ResponseEntity.ok(result.getValue());
     }
 }
