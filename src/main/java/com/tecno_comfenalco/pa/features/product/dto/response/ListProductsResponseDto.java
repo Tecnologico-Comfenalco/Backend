@@ -2,7 +2,7 @@ package com.tecno_comfenalco.pa.features.product.dto.response;
 
 import java.util.List;
 
-import com.tecno_comfenalco.pa.features.product.ProductEntity;
+import com.tecno_comfenalco.pa.features.product.dto.ProductDto;
 
-public record ListProductsResponseDto(List<ProductEntity> products, String message) {
+public record ListProductsResponseDto(List<ProductDto> products, String message) {
 }

@@ -1,7 +1,7 @@
 package com.tecno_comfenalco.pa.features.product.dto.response;
 
-import com.tecno_comfenalco.pa.features.product.ProductEntity;
+import com.tecno_comfenalco.pa.features.product.dto.ProductDto;
 
-public record ProductResponseDto(String message, ProductEntity product) {
+public record ProductResponseDto(String message, ProductDto product) {
 
 }

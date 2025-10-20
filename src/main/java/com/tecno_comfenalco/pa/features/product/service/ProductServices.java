@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
+import com.tecno_comfenalco.pa.features.product.dto.ProductDto;
 import com.tecno_comfenalco.pa.features.product.dto.request.EditProductRequestDto;
 import com.tecno_comfenalco.pa.features.product.dto.request.RegisterProductRequestDto;
 import com.tecno_comfenalco.pa.features.product.dto.response.DisableProductResponseDto;
@@ -81,7 +82,15 @@ public class ProductServices {
     public Result<ListProductsResponseDto, Exception> listProducts() {
         List<ProductEntity> productEntities = productRepository.findAll();
         try {
-            return Result.ok(new ListProductsResponseDto(productEntities, "Products found successfully!"));
+            List<ProductDto> productDtos = productEntities.stream().map(product -> new ProductDto(
+                    product.getId(),
+                    product.getName(),
+                    product.getCatalog() != null ? product.getCatalog().getId().hashCode() : null,
+                    product.getPrice(),
+                    product.getUnit().name()))
+                    .toList();
+
+            return Result.ok(new ListProductsResponseDto(productDtos, "Products found successfully!"));
         } catch (Exception e) {
             return Result.error(new Exception("Error retrieving products"));
         }
@@ -90,7 +99,13 @@ public class ProductServices {
     public Result<ProductResponseDto, Exception> showProduct(UUID id) {
         try {
             return productRepository.findById(id).map(product -> {
-                return Result.ok(new ProductResponseDto("Product found!", product));
+                ProductDto productDto = new ProductDto(
+                        product.getId(),
+                        product.getName(),
+                        product.getCatalog() != null ? product.getCatalog().getId().hashCode() : null,
+                        product.getPrice(),
+                        product.getUnit().name());
+                return Result.ok(new ProductResponseDto("Product found!", productDto));
             }).orElseGet(() -> Result.error(new Exception("Product not found!")));
         } catch (Exception e) {
             return Result.error(new Exception("Error retrieving product"));
