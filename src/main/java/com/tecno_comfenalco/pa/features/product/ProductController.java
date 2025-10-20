@@ -38,8 +38,7 @@ public class ProductController {
             @RequestBody @Valid RegisterProductRequestDto dtoProduct) {
         Result<RegisterProductResponseDto, Exception> result = productServices.saveProducts(dtoProduct);
 
-        return ResponseEntityHelper.toResponseEntity(result, result.getValue(),
-                new RegisterProductResponseDto("Error for register product!"));
+        return ResponseEntityHelper.toResponseEntity(result);
     }
 
     @PutMapping("/{id}")
@@ -47,9 +46,7 @@ public class ProductController {
             @RequestBody @Valid EditProductRequestDto dtoProduct) {
         Result<EditProductResponseDto, Exception> result = productServices.editProduct(id, dtoProduct);
 
-        return ResponseEntityHelper.toResponseEntity(result,
-                result.getValue(),
-                new EditProductResponseDto("Error to modified product!", id));
+        return ResponseEntityHelper.toResponseEntity(result);
     }
 
     @DeleteMapping("/{id}")
@@ -57,8 +54,7 @@ public class ProductController {
 
         Result<DisableProductResponseDto, Exception> result = productServices.disabledProduct(id);
 
-        return ResponseEntityHelper.toResponseEntity(result, result.getValue(),
-                new DisableProductResponseDto("Error to modified product!"));
+        return ResponseEntityHelper.toResponseEntity(result);
     }
 
     @GetMapping
@@ -71,7 +67,6 @@ public class ProductController {
     public ResponseEntity<ProductResponseDto> showProduct(@PathVariable UUID id) {
         Result<ProductResponseDto, Exception> result = productServices.showProduct(id);
 
-        return ResponseEntityHelper.toResponseEntity(result, result.getValue(),
-                new ProductResponseDto("product not found!", null));
+        return ResponseEntityHelper.toResponseEntity(result);
     }
 }
