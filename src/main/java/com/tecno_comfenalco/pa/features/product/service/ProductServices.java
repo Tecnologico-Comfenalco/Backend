@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
 import com.tecno_comfenalco.pa.features.product.dto.request.EditProductRequestDto;
@@ -16,6 +17,7 @@ import com.tecno_comfenalco.pa.features.product.dto.response.RegisterProductResp
 import com.tecno_comfenalco.pa.features.product.repository.IProductRepository;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
+@Service
 public class ProductServices {
     @Autowired
     private IProductRepository productRepository;
@@ -28,14 +30,18 @@ public class ProductServices {
             Result.error(new Exception("Product already Exists"));
         }
 
-        ProductEntity productEntity = new ProductEntity();
-        productEntity.setName(dtoProduct.name());
-        productEntity.setPrice(dtoProduct.price());
-        productEntity.setUnit(dtoProduct.unit());
+        try {
+            ProductEntity productEntity = new ProductEntity();
+            productEntity.setName(dtoProduct.name());
+            productEntity.setPrice(dtoProduct.price());
+            productEntity.setUnit(dtoProduct.unit());
 
-        productRepository.save(productEntity);
+            productRepository.save(productEntity);
 
-        return Result.ok(new RegisterProductResponseDto("Producto registrado exitosamente!"));
+            return Result.ok(new RegisterProductResponseDto("Producto registrado exitosamente!"));
+        } catch (Exception e) {
+            return Result.error(new Exception("Error registering product"));
+        }
     }
 
     public Result<EditProductResponseDto, Exception> editProduct(UUID id, EditProductRequestDto dtoProduct) {
@@ -56,7 +62,7 @@ public class ProductServices {
                     }).orElseGet(() -> Result.error(new Exception("Product not found!")));
 
         } catch (Exception e) {
-            return Result.error(e);
+            return Result.error(new Exception("Error editing product"));
         }
     }
 
@@ -68,18 +74,26 @@ public class ProductServices {
 
             }).orElseGet(() -> Result.error(new Exception("Product not found!")));
         } catch (Exception e) {
-            return Result.error(e);
+            return Result.error(new Exception("Error disabling product"));
         }
     }
 
     public Result<ListProductsResponseDto, Exception> listProducts() {
         List<ProductEntity> productEntities = productRepository.findAll();
-        return Result.ok(new ListProductsResponseDto(productEntities));
+        try {
+            return Result.ok(new ListProductsResponseDto(productEntities, "Products found successfully!"));
+        } catch (Exception e) {
+            return Result.error(new Exception("Error retrieving products"));
+        }
     }
 
     public Result<ProductResponseDto, Exception> showProduct(UUID id) {
-        return productRepository.findById(id).map(product -> {
-            return Result.ok(new ProductResponseDto("product found!", product));
-        }).orElseGet(() -> Result.error(new Exception("Product not found!")));
+        try {
+            return productRepository.findById(id).map(product -> {
+                return Result.ok(new ProductResponseDto("Product found!", product));
+            }).orElseGet(() -> Result.error(new Exception("Product not found!")));
+        } catch (Exception e) {
+            return Result.error(new Exception("Error retrieving product"));
+        }
     }
 }

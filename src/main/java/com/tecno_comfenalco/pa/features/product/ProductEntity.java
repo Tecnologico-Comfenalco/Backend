@@ -41,6 +41,6 @@ public class ProductEntity {
     private List<OrderDetailEntity> orderDetails;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = true)
+    @JoinColumn(name = "catalog_id", referencedColumnName = "id", nullable = true)
     private CatalogEntity catalog;
 }

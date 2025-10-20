@@ -4,6 +4,5 @@ import java.util.List;
 
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
 
-public record ListProductsResponseDto(List<ProductEntity> productEntities) {
-
+public record ListProductsResponseDto(List<ProductEntity> products, String message) {
 }
