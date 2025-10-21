@@ -1,5 +1,6 @@
 package com.tecno_comfenalco.pa.features.distributor.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.repository.NoRepositoryBean;
@@ -14,5 +15,9 @@ public interface IDistributorRepository extends Repository<DistributorEntity, Lo
 
     Optional<DistributorEntity> findByName(String name);
 
+    List<DistributorEntity> findAll();
+
     DistributorEntity save(DistributorEntity distributorEntity);
+
+    boolean existByName(String name);
 }
