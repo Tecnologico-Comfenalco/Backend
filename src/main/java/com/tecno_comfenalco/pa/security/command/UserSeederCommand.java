@@ -23,15 +23,15 @@ public class UserSeederCommand implements CommandLineRunner {
         public void run(String... args) throws Exception {
                 // Seed initial users
                 userRepository.save(UserEntity.builder().username("admin").password(passwordEncoder.encode("password"))
-                                .enabled(true).roles(Set.of("ROLE_ADMIN")).build());
+                                .enabled(true).roles(Set.of("ADMIN")).build());
 
                 userRepository.save(
                                 UserEntity.builder().username("presales").password(passwordEncoder.encode("password"))
-                                                .enabled(true).roles(Set.of("ROLE_PRESALES")).build());
+                                                .enabled(true).roles(Set.of("PRESALES")).build());
 
                 userRepository.save(UserEntity.builder().username("distributor")
                                 .password(passwordEncoder.encode("password")).enabled(true)
-                                .roles(Set.of("ROLE_DISTRIBUTOR")).build());
+                                .roles(Set.of("DISTRIBUTOR")).build());
 
                 System.out.println("🟩____Users seeded____🟩");
         }

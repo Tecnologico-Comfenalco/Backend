@@ -20,7 +20,7 @@ import com.tecno_comfenalco.pa.security.filters.JwtCustomFilter;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -55,6 +55,10 @@ public class SecurityConfig {
                     config.addAllowedMethod("*");
                     return config;
                 }))
+                .authorizeHttpRequests(http -> {
+                    http.anyRequest()
+                            .permitAll();
+                })
                 // Establece la politica de sesion como sin estado
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
