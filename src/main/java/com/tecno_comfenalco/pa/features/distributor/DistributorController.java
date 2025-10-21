@@ -1,5 +1,6 @@
 package com.tecno_comfenalco.pa.features.distributor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,15 +22,14 @@ import com.tecno_comfenalco.pa.shared.utils.helper.ResponseEntityHelper;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/distributor")
-@PreAuthorize("hasRole('DISTRIBUTOR')")
-@RequiredArgsConstructor
+@RequestMapping("/distributors")
+@PreAuthorize("hasAnyRole('ADMIN', 'DISTRIBUTOR')")
 public class DistributorController {
 
-    private final DistributorService distributorService;
+    @Autowired
+    private DistributorService distributorService;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterDistributorResponseDto> newDistributor(

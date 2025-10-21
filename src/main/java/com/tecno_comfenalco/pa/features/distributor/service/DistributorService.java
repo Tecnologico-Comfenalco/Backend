@@ -1,8 +1,10 @@
 package com.tecno_comfenalco.pa.features.distributor.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
 import com.tecno_comfenalco.pa.features.distributor.dto.DistributorDto;
@@ -13,19 +15,30 @@ import com.tecno_comfenalco.pa.features.distributor.dto.response.EditDistributor
 import com.tecno_comfenalco.pa.features.distributor.dto.response.ListDistributorsResponseDto;
 import com.tecno_comfenalco.pa.features.distributor.dto.response.RegisterDistributorResponseDto;
 import com.tecno_comfenalco.pa.features.distributor.repository.IDistributorRepository;
+import com.tecno_comfenalco.pa.security.AuthenticationService;
+import com.tecno_comfenalco.pa.security.domain.UserEntity;
+import com.tecno_comfenalco.pa.security.dto.requests.RegisterUserRequestDto;
+import com.tecno_comfenalco.pa.security.repository.IUserRepository;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
+@Service
 public class DistributorService {
     @Autowired
     private IDistributorRepository distributorRepository;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    @Autowired
+    private IUserRepository userRepository;
+
     public Result<RegisterDistributorResponseDto, Exception> newDistributor(
             RegisterDistributorRequestDto dtoDistributor) {
 
-        boolean existsDistributor = distributorRepository.existByName(dtoDistributor.name());
+        boolean existsDistributor = distributorRepository.existsByName(dtoDistributor.name());
 
         if (existsDistributor) {
-            Result.error(new Exception("Distributor already register!"));
+            return Result.error(new Exception("Distributor already register!"));
         }
 
         try {
@@ -37,15 +50,24 @@ public class DistributorService {
             distributorEntity.setEmail(dtoDistributor.email());
             distributorEntity.setDirection(dtoDistributor.direction());
 
+            Long userId = authenticationService.registerUser(
+                    new RegisterUserRequestDto(dtoDistributor.name().toLowerCase().replace(" ", "_"),
+                            "password", Set.of("DISTRIBUTOR"), true))
+                    .getValue().userId();
+
+            UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new Exception("User not found!"));
+
+            distributorEntity.setUser(userEntity);
+
             distributorRepository.save(distributorEntity);
 
-            Result.ok(new RegisterDistributorResponseDto("Distributor register succesfull!"));
+            return Result.ok(new RegisterDistributorResponseDto("Distributor register succesfull!"));
 
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return Result.error(new Exception("Error to register distributor!"));
         }
 
-        return null;
     }
 
     public Result<EditDistributorResponseDto, Exception> editDistributor(Long id,

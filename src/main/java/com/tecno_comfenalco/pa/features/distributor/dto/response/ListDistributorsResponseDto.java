@@ -4,6 +4,6 @@ import java.util.List;
 
 import com.tecno_comfenalco.pa.features.distributor.dto.DistributorDto;
 
-public record ListDistributorsResponseDto(List<DistributorDto> distributorEntities, String message) {
+public record ListDistributorsResponseDto(List<DistributorDto> distributors, String message) {
 
 }

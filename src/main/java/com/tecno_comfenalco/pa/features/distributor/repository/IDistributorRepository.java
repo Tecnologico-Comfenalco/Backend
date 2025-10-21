@@ -19,5 +19,5 @@ public interface IDistributorRepository extends Repository<DistributorEntity, Lo
 
     DistributorEntity save(DistributorEntity distributorEntity);
 
-    boolean existByName(String name);
+    boolean existsByName(String name);
 }
