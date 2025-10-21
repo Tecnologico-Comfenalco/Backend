@@ -50,9 +50,12 @@ public class AuthenticationController {
 
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setMaxAge((int) (expirationTime / 1000)); // Convert milliseconds to seconds
+        cookie.setSecure(false); // ⚠️ usa 'true' solo si estás en HTTPS, sino no se envía en localhost
+        cookie.setPath("/"); // permite que se envíe en todas las rutas
+        cookie.setMaxAge((int) (expirationTime / 1000));
 
+        // 💡 A partir de Java 11 puedes establecer SameSite manualmente:
+        cookie.setAttribute("SameSite", "None"); // O "Lax" si estás sin HTTPS
         response.addCookie(cookie);
 
         return ResponseEntity.ok(new LoginResponseDto(loginResp.message(), token));
