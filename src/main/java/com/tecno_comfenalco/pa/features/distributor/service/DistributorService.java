@@ -120,7 +120,7 @@ public class DistributorService {
 
                 return Result.ok(new DistributorResponseDto(distributorDto, "Distributor found succesfull"));
 
-            }).orElseGet(() -> Result.error(new Exception("")));
+            }).orElseThrow();
 
         } catch (Exception e) {
             return Result.error(new Exception("Error retrieving Distributor!"));
