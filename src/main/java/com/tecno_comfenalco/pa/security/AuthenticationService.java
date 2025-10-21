@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.security.domain.UserEntity;
@@ -44,7 +45,7 @@ public class AuthenticationService {
 
         UserEntity newUser = new UserEntity();
         newUser.setUsername(request.username());
-        newUser.setPassword(request.password());
+        newUser.setPassword(new BCryptPasswordEncoder().encode(request.password()));
         newUser.setRoles(request.roles());
         newUser.setEnabled(request.enabled());
         userRepository.save(newUser);
