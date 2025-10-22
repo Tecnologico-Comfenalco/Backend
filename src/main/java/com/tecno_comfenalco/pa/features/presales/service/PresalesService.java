@@ -135,42 +135,27 @@ public class PresalesService {
 
     public void assignPresalesToDistributor(PresalesEntity presalesEntity) {
         try {
-            System.out.println("=== INICIO assignPresalesToDistributor ===");
 
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            System.out.println("Username autenticado: " + username);
 
             var userOpt = userRepository.findByUsername(username);
             if (userOpt.isEmpty()) {
-                System.out.println("ERROR: User not found con username: " + username);
                 return;
             }
 
             UserEntity user = userOpt.get();
-            System.out.println("User encontrado - ID: " + user.getId() + ", Username: " + user.getUsername());
-            System.out.println("Roles del usuario: " + user.getRoles());
 
-            System.out.println("Buscando distribuidor con user_id: " + user.getId());
             var distributorOpt = distributorRepository.findByUser_Id(user.getId());
 
             if (distributorOpt.isEmpty()) {
-                System.out.println("ERROR: Distributor NO encontrado para user_id: " + user.getId());
-                System.out.println(
-                        "Verifica en la BD si existe un registro en 'distributors' con user_id = " + user.getId());
                 return;
             }
 
             DistributorEntity distributorAuthenticated = distributorOpt.get();
-            System.out.println("Distribuidor encontrado - ID: " + distributorAuthenticated.getId() +
-                    ", Nombre: " + distributorAuthenticated.getName() +
-                    ", User_ID: " + distributorAuthenticated.getUser().getId());
 
             presalesEntity.setDistributor(distributorAuthenticated);
-            System.out.println("Distribuidor asignado exitosamente al presales");
-            System.out.println("=== FIN assignPresalesToDistributor ===");
 
         } catch (Exception e) {
-            System.out.println("EXCEPCIÓN en assignPresalesToDistributor: " + e.getMessage());
             e.printStackTrace();
         }
     }
