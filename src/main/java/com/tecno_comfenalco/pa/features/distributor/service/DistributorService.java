@@ -6,6 +6,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tecno_comfenalco.pa.features.catalog.CatalogEntity;
+import com.tecno_comfenalco.pa.features.catalog.repository.ICatalogRepository;
 import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
 import com.tecno_comfenalco.pa.features.distributor.dto.DistributorDto;
 import com.tecno_comfenalco.pa.features.distributor.dto.request.EditDistributorRequestDto;
@@ -28,6 +30,9 @@ public class DistributorService {
 
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    private ICatalogRepository catalogRepository;
 
     @Autowired
     private IUserRepository userRepository;
@@ -60,6 +65,9 @@ public class DistributorService {
             distributorEntity.setUser(userEntity);
 
             distributorRepository.save(distributorEntity);
+
+            var catalogOfDistributor = new CatalogEntity();
+            catalogOfDistributor.setDistributor(distributorEntity);
 
             return Result.ok(new RegisterDistributorResponseDto("Distributor register succesfull!"));
 
