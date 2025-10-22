@@ -68,6 +68,7 @@ public class DistributorService {
 
             var catalogOfDistributor = new CatalogEntity();
             catalogOfDistributor.setDistributor(distributorEntity);
+            catalogRepository.save(catalogOfDistributor);
 
             return Result.ok(new RegisterDistributorResponseDto("Distributor register succesfull!"));
 
