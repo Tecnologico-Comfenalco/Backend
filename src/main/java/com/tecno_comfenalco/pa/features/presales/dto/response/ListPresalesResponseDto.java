@@ -4,6 +4,6 @@ import java.util.List;
 
 import com.tecno_comfenalco.pa.features.presales.dto.PresalesDto;
 
-public record ListPresalesResponseDto(List<PresalesDto> dtoPresales, String message) {
+public record ListPresalesResponseDto(List<PresalesDto> presales, String message) {
 
 }

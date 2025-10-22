@@ -25,7 +25,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/presales")
-@PreAuthorize("hasAnyRole('ADMIN','PRESALES')")
+@PreAuthorize("hasAnyRole('DISTRIBUTOR')")
 public class PresalesController {
 
     @Autowired
