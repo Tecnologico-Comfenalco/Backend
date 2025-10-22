@@ -37,7 +37,7 @@ public class DeliveryService {
         boolean existsDelivery = deliveryRepository.existsByDocumentNumber(dtoDelivery.documentnumber());
 
         if (existsDelivery) {
-            return Result.error(new Exception("the current delivery is already register!"));
+            return Result.error(new Exception("The current delivery is already registered!"));
         }
 
         try {
@@ -60,7 +60,7 @@ public class DeliveryService {
             deliveryEntity.setUser(userEntity);
             deliveryRepository.save(deliveryEntity);
 
-            return Result.ok(new RegisterDeliveryResponseDto("Delivery register succesfull!"));
+            return Result.ok(new RegisterDeliveryResponseDto("Delivery register successful!"));
         } catch (Exception e) {
             return Result.error(new Exception("Error to register delivery!"));
         }
@@ -82,7 +82,7 @@ public class DeliveryService {
                         deliveryRepository.save(delivery);
 
                         EditDeliveryResponseDto response = new EditDeliveryResponseDto(
-                                "delivery edited succesfull");
+                                "delivery edited successfully!");
 
                         return Result.ok(response);
 
@@ -103,9 +103,9 @@ public class DeliveryService {
                             delivery.getLicenseType()))
                     .toList();
 
-            return Result.ok(new ListDeliveriesResponseDto(deliverysDto, "deliverys founds succesfull!"));
+            return Result.ok(new ListDeliveriesResponseDto(deliverysDto, "deliveries found successfully!"));
         } catch (Exception e) {
-            return Result.error(new Exception("Error retrieving deliverys!"));
+            return Result.error(new Exception("Error retrieving deliveries!"));
         }
     }
 
@@ -117,7 +117,7 @@ public class DeliveryService {
                         delivery.getDocumentType(), delivery.getDocumentNumber(), delivery.getPhoneNumber(),
                         delivery.getLicenseNumber(), delivery.getLicenseType());
 
-                return Result.ok(new DeliveryResponseDto(deliveryDto, "delivery found succesfull"));
+                return Result.ok(new DeliveryResponseDto(deliveryDto, "delivery found successfully"));
 
             }).orElseThrow();
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.presales.PresalesEntity;
 import com.tecno_comfenalco.pa.features.presales.dto.PresalesDto;
@@ -20,6 +21,7 @@ import com.tecno_comfenalco.pa.security.dto.requests.RegisterUserRequestDto;
 import com.tecno_comfenalco.pa.security.repository.IUserRepository;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
+@Service
 public class PresalesService {
 
     @Autowired
@@ -36,7 +38,7 @@ public class PresalesService {
         boolean existsPresale = presalesRepository.existsByDocumentNumber(dtoPresales.documentNumber());
 
         if (existsPresale) {
-            return Result.error(new Exception("the current presale is already register!"));
+            return Result.error(new Exception("The current presales is already registered!"));
         }
 
         try {
@@ -58,9 +60,9 @@ public class PresalesService {
             presalesEntity.setUser(userEntity);
             presalesRepository.save(presalesEntity);
 
-            return Result.ok(new RegisterPresalesResponseDto("Presale register succesfull!"));
+            return Result.ok(new RegisterPresalesResponseDto("Presales register successful!"));
         } catch (Exception e) {
-            return Result.error(new Exception("Error to register Presale!"));
+            return Result.error(new Exception("Error to register Presales!"));
         }
     }
 
@@ -79,13 +81,13 @@ public class PresalesService {
                         presalesRepository.save(presale);
 
                         EditPresalesResponseDto response = new EditPresalesResponseDto(
-                                "presale edited succesfull");
+                                "presales edited successfully");
 
                         return Result.ok(response);
 
-                    }).orElseGet(() -> Result.error(new Exception("presale not found!")));
+                    }).orElseGet(() -> Result.error(new Exception("presales not found!")));
         } catch (Exception e) {
-            return Result.error(new Exception("presale not exists by id cause!"));
+            return Result.error(new Exception("presales not exists by id cause!"));
         }
     }
 
@@ -99,7 +101,7 @@ public class PresalesService {
                             presales.getEmail(), presales.getDocumentType(), presales.getDocumentNumber()))
                     .toList();
 
-            return Result.ok(new ListPresalesResponseDto(presalesDtos, "presales founds succesfull!"));
+            return Result.ok(new ListPresalesResponseDto(presalesDtos, "presales found successfully!"));
         } catch (Exception e) {
             return Result.error(new Exception("Error retrieving presales!"));
         }
@@ -111,12 +113,12 @@ public class PresalesService {
                 PresalesDto presalesDto = new PresalesDto(presale.getId(), presale.getName(), presale.getPhoneNumber(),
                         presale.getEmail(), presale.getDocumentType(), presale.getDocumentNumber());
 
-                return Result.ok(new PresalesResponseDto(presalesDto, "presale found succesfull"));
+                return Result.ok(new PresalesResponseDto(presalesDto, "presales found successfully"));
 
             }).orElseThrow();
 
         } catch (Exception e) {
-            return Result.error(new Exception("Error retrieving presale!"));
+            return Result.error(new Exception("Error retrieving presales!"));
         }
     }
 }
