@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.delivery.DeliveryEntity;
@@ -15,6 +16,9 @@ import com.tecno_comfenalco.pa.features.delivery.dto.response.EditDeliveryRespon
 import com.tecno_comfenalco.pa.features.delivery.dto.response.ListDeliveriesResponseDto;
 import com.tecno_comfenalco.pa.features.delivery.dto.response.RegisterDeliveryResponseDto;
 import com.tecno_comfenalco.pa.features.delivery.repository.IDeliveryRepository;
+import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
+import com.tecno_comfenalco.pa.features.distributor.repository.IDistributorRepository;
+import com.tecno_comfenalco.pa.features.presales.PresalesEntity;
 import com.tecno_comfenalco.pa.security.AuthenticationService;
 import com.tecno_comfenalco.pa.security.domain.UserEntity;
 import com.tecno_comfenalco.pa.security.dto.requests.RegisterUserRequestDto;
@@ -32,9 +36,12 @@ public class DeliveryService {
     @Autowired
     private IUserRepository userRepository;
 
+    @Autowired
+    private IDistributorRepository distributorRepository;
+
     public Result<RegisterDeliveryResponseDto, Exception> newDelivery(RegisterDeliveryRequestDto dtoDelivery) {
 
-        boolean existsDelivery = deliveryRepository.existsByDocumentNumber(dtoDelivery.documentnumber());
+        boolean existsDelivery = deliveryRepository.existsByDocumentNumber(dtoDelivery.documentNumber());
 
         if (existsDelivery) {
             return Result.error(new Exception("The current delivery is already registered!"));
@@ -45,7 +52,7 @@ public class DeliveryService {
             DeliveryEntity deliveryEntity = new DeliveryEntity();
             deliveryEntity.setName(dtoDelivery.name());
             deliveryEntity.setDocumentType(dtoDelivery.documentTypeEnum());
-            deliveryEntity.setDocumentNumber(dtoDelivery.documentnumber());
+            deliveryEntity.setDocumentNumber(dtoDelivery.documentNumber());
             deliveryEntity.setPhoneNumber(dtoDelivery.phoneNumber());
             deliveryEntity.setLicenseNumber(dtoDelivery.licenseNumber());
             deliveryEntity.setLicenseType(dtoDelivery.licenseType());
@@ -58,6 +65,9 @@ public class DeliveryService {
             UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new Exception("User not found!"));
 
             deliveryEntity.setUser(userEntity);
+
+            assignDeliveryToDistributor(deliveryEntity);
+
             deliveryRepository.save(deliveryEntity);
 
             return Result.ok(new RegisterDeliveryResponseDto("Delivery register successful!"));
@@ -123,6 +133,33 @@ public class DeliveryService {
 
         } catch (Exception e) {
             return Result.error(new Exception("Error retrieving delivery!"));
+        }
+    }
+
+    public void assignDeliveryToDistributor(DeliveryEntity deliveryEntity) {
+        try {
+
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+            var userOpt = userRepository.findByUsername(username);
+            if (userOpt.isEmpty()) {
+                return;
+            }
+
+            UserEntity user = userOpt.get();
+
+            var distributorOpt = distributorRepository.findByUser_Id(user.getId());
+
+            if (distributorOpt.isEmpty()) {
+                return;
+            }
+
+            DistributorEntity distributorAuthenticated = distributorOpt.get();
+
+            deliveryEntity.setDistributor(distributorAuthenticated);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

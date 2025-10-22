@@ -20,4 +20,6 @@ public interface IDistributorRepository extends Repository<DistributorEntity, Lo
     DistributorEntity save(DistributorEntity distributorEntity);
 
     boolean existsByName(String name);
+
+    Optional<DistributorEntity> findByUser_Id(Long userId);
 }
