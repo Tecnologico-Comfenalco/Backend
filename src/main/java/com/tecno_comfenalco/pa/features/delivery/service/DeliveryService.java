@@ -51,7 +51,7 @@ public class DeliveryService {
 
             DeliveryEntity deliveryEntity = new DeliveryEntity();
             deliveryEntity.setName(dtoDelivery.name());
-            deliveryEntity.setDocumentType(dtoDelivery.documentTypeEnum());
+            deliveryEntity.setDocumentType(dtoDelivery.documentType());
             deliveryEntity.setDocumentNumber(dtoDelivery.documentNumber());
             deliveryEntity.setPhoneNumber(dtoDelivery.phoneNumber());
             deliveryEntity.setLicenseNumber(dtoDelivery.licenseNumber());
@@ -72,7 +72,7 @@ public class DeliveryService {
 
             return Result.ok(new RegisterDeliveryResponseDto("Delivery register successful!"));
         } catch (Exception e) {
-            return Result.error(new Exception("Error to register delivery!"));
+            return Result.error(new Exception("Error to register delivery!", e));
         }
     }
 
@@ -110,7 +110,7 @@ public class DeliveryService {
             List<DeliveryDto> deliverysDto = deliveryEntities.stream()
                     .map(delivery -> new DeliveryDto(delivery.getId(), delivery.getName(), delivery.getDocumentType(),
                             delivery.getDocumentNumber(), delivery.getPhoneNumber(), delivery.getLicenseNumber(),
-                            delivery.getLicenseType()))
+                            delivery.getLicenseType(), delivery.getUser().getId(), delivery.getDistributor().getId()))
                     .toList();
 
             return Result.ok(new ListDeliveriesResponseDto(deliverysDto, "deliveries found successfully!"));
@@ -125,7 +125,8 @@ public class DeliveryService {
 
                 DeliveryDto deliveryDto = new DeliveryDto(delivery.getId(), delivery.getName(),
                         delivery.getDocumentType(), delivery.getDocumentNumber(), delivery.getPhoneNumber(),
-                        delivery.getLicenseNumber(), delivery.getLicenseType());
+                        delivery.getLicenseNumber(), delivery.getLicenseType(), delivery.getUser().getId(),
+                        delivery.getDistributor().getId());
 
                 return Result.ok(new DeliveryResponseDto(deliveryDto, "delivery found successfully"));
 
