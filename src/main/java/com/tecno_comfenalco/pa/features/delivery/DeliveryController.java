@@ -25,7 +25,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/deliveries")
-@PreAuthorize("hasAnyRole('ADMIN','DELIVERY')")
+@PreAuthorize("hasAnyRole('DISTRIBUTOR')")
 public class DeliveryController {
     @Autowired
     public DeliveryService deliveryService;
