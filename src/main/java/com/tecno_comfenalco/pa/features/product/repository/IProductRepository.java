@@ -19,7 +19,7 @@ public interface IProductRepository extends Repository<ProductEntity, UUID> {
 
     List<ProductEntity> findAll();
 
-    List<ProductEntity> findByCatalogId(Long id);
+    List<ProductEntity> findByCategory_Id(Long id);
 
     boolean existsByName(String name);
 

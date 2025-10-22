@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import com.tecno_comfenalco.pa.features.catalog.CatalogEntity;
+import com.tecno_comfenalco.pa.features.category.CategoryEntity;
+import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
 import com.tecno_comfenalco.pa.features.order.OrderDetailEntity;
 
 import jakarta.persistence.CascadeType;
@@ -41,6 +43,10 @@ public class ProductEntity {
     private List<OrderDetailEntity> orderDetails;
 
     @ManyToOne
-    @JoinColumn(name = "catalog_id", referencedColumnName = "id", nullable = true)
-    private CatalogEntity catalog;
+    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = true)
+    private CategoryEntity category;
+
+    @ManyToOne
+    @JoinColumn(name = "distributor_id", referencedColumnName = "id", nullable = true)
+    private DistributorEntity distributor;
 }

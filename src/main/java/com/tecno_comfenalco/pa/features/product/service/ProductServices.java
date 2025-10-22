@@ -89,7 +89,7 @@ public class ProductServices {
             List<ProductDto> productDtos = productEntities.stream().map(product -> new ProductDto(
                     product.getId(),
                     product.getName(),
-                    product.getCatalog() != null ? product.getCatalog().getId().hashCode() : null,
+                    product.getCategory() != null ? product.getCategory().getId().hashCode() : null,
                     product.getPrice(),
                     product.getUnit().name()))
                     .toList();
@@ -107,7 +107,7 @@ public class ProductServices {
                 ProductDto productDto = new ProductDto(
                         product.getId(),
                         product.getName(),
-                        product.getCatalog() != null ? product.getCatalog().getId().hashCode() : null,
+                        product.getCategory() != null ? product.getCategory().getId().hashCode() : null,
                         product.getPrice(),
                         product.getUnit().name());
                 return Result.ok(new ProductResponseDto("Product found!", productDto));
