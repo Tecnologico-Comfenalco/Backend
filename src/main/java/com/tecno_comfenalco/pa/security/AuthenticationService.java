@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +86,7 @@ public class AuthenticationService {
         }
 
         UserEntity user = userOpt.get();
-        UserDto userDto = new UserDto(user.getUsername(), user.getRoles(), user.isEnabled());
+        UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getRoles(), user.isEnabled());
 
         UserResponseDto userResponse = new UserResponseDto(userDto, "User obtained successfully");
 
@@ -94,7 +95,7 @@ public class AuthenticationService {
 
     public Result<ListUserResponseDto, Exception> listUsers() {
         var users = userRepository.findAll().stream().map(user -> {
-            UserDto userDto = new UserDto(user.getUsername(), user.getRoles(), user.isEnabled());
+            UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getRoles(), user.isEnabled());
             return new UserResponseDto(userDto, "User obtained successfully");
         }).toArray(UserResponseDto[]::new);
 
@@ -114,10 +115,22 @@ public class AuthenticationService {
         user.setEnabled(request.enabled());
         userRepository.save(user);
 
-        UserDto userDto = new UserDto(user.getUsername(), user.getRoles(), user.isEnabled());
+        UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getRoles(), user.isEnabled());
         UserResponseDto userResponse = new UserResponseDto(userDto, "User edited successfully");
 
         return Result.ok(userResponse);
     }
 
+    public Result<UserDto, Exception> getAuthenticatedContextUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        var userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return Result.error(new Exception("User not found"));
+        }
+
+        UserEntity user = userOpt.get();
+        UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getRoles(), user.isEnabled());
+
+        return Result.ok(userDto);
+    }
 }
