@@ -12,4 +12,8 @@ public interface ICatalogRepository extends Repository<CatalogEntity, Long> {
     CatalogEntity save(CatalogEntity catalogEntity);
 
     Optional<CatalogEntity> findById(Long id);
+
+    // Use a dedicated repository for ProductsCatalogEntity to handle inserts into
+    // the join table.
+    // Spring Data JPA will provide a standard save() on the dedicated repository.
 }

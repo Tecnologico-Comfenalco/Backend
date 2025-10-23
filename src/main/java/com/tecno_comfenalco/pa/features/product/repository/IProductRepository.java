@@ -19,7 +19,9 @@ public interface IProductRepository extends Repository<ProductEntity, UUID> {
 
     List<ProductEntity> findAll();
 
-    List<ProductEntity> findByCategory_Id(Long id);
+    // Search products by the category id stored in the ProductsCatalogEntity linked
+    // via 'categoryProduct'
+    List<ProductEntity> findByCategoryProduct_Category_Id(Long id);
 
     boolean existsByName(String name);
 
