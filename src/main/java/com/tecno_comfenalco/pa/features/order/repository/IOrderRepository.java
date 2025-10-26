@@ -1,5 +1,7 @@
 package com.tecno_comfenalco.pa.features.order.repository;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.repository.NoRepositoryBean;
@@ -9,5 +11,13 @@ import com.tecno_comfenalco.pa.features.order.OrderEntity;
 
 @NoRepositoryBean
 public interface IOrderRepository extends Repository<OrderEntity, UUID> {
+    Optional<OrderEntity> findByid(UUID id);
 
+    OrderEntity save(OrderEntity orderEntity);
+
+    List<OrderEntity> findAll();
+
+    boolean existsByid(UUID id);
+
+    void deleteById(UUID id);
 }
