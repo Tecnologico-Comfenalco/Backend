@@ -20,5 +20,7 @@ public interface IStoreRepository extends Repository<StoreEntity, Long> {
 
     boolean existsByNIT(Long nit);
 
+    boolean existsById(Long id);
+
     void deleteById(Long id);
 }
