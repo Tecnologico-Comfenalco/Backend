@@ -40,7 +40,7 @@ public class ProductServices {
 
             productRepository.save(productEntity);
 
-            return Result.ok(new RegisterProductResponseDto("Producto registrado exitosamente!"));
+            return Result.ok(new RegisterProductResponseDto("Product register succesfull!"));
         } catch (Exception e) {
             return Result.error(new Exception("Error registering product"));
         }
