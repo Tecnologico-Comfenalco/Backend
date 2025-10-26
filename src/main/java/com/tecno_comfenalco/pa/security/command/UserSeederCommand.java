@@ -37,6 +37,10 @@ public class UserSeederCommand implements CommandLineRunner {
                                 .password(passwordEncoder.encode("password")).enabled(true)
                                 .roles(Set.of("DELIVERY")).build());
 
+                userRepository.save(UserEntity.builder().username("store")
+                                .password(passwordEncoder.encode("password")).enabled(true)
+                                .roles(Set.of("STORE")).build());
+
                 System.out.println("🟩____Users seeded____🟩");
         }
 
