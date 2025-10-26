@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.vehicle.VehicleEntity;
 import com.tecno_comfenalco.pa.features.vehicle.dto.VehicleDto;
+import com.tecno_comfenalco.pa.features.vehicle.dto.mapper.VehicleMapper;
 import com.tecno_comfenalco.pa.features.vehicle.dto.request.RegisterVehicleRequestDto;
 import com.tecno_comfenalco.pa.features.vehicle.dto.response.DisableVehicleResponseDto;
 import com.tecno_comfenalco.pa.features.vehicle.dto.response.ListVehiclesResponseDto;
@@ -21,29 +22,41 @@ public class VehicleService {
     @Autowired
     private IVehicleRepository vehicleRepository;
 
-    public Result<RegisterVehicleResponseDto, Exception> newVehicle(RegisterVehicleRequestDto dtoVehicle) {
-        boolean existsVehicle = vehicleRepository.existsByName(dtoVehicle.vehiclePlate());
+    private final VehicleMapper vehicleMapper;
 
-        if (existsVehicle) {
-            return Result.error(new Exception("the vehicle already registed!"));
+    //Definimos el constructor para inyectar el mapper.
+    public VehicleService(IVehicleRepository  vehicleRepository, VehicleMapper vehicleMapper) {
+        this.vehicleRepository = vehicleRepository;
+        this.vehicleMapper = vehicleMapper;
+    }
+
+    //Implementacion de nuevo metodo Vechicle(CREATE).
+    //Se usa el mapper para convertir entre dto de request a entidad.
+
+    public Result<RegisterVehicleResponseDto, Exception> newVehicle(RegisterVehicleRequestDto dtoVehicle) {
+        
+
+        if (vehicleRepository.existsByName(dtoVehicle.vehiclePlate())) {
+            return Result.error(new Exception("Vehicle plate already exists!"));
         }
 
+        //Usamos el mapper para convertir el dto a entidad.
         try {
-            VehicleEntity vehicleEntity = new VehicleEntity();
-            vehicleEntity.setVehiclePlate(dtoVehicle.vehiclePlate());
-            vehicleEntity.setModel(dtoVehicle.model());
-            vehicleEntity.setBrand(dtoVehicle.brand());
+            VehicleEntity vehicleEntity = vehicleMapper.toEntity(
+                    new VehicleDto(dtoVehicle.vehiclePlate(), dtoVehicle.model(), dtoVehicle.brand()));
 
-            vehicleRepository.save(vehicleEntity);
+                    vehicleEntity = vehicleRepository.save(vehicleEntity);
 
-            RegisterVehicleResponseDto response = new RegisterVehicleResponseDto("Vehicle register succesfull");
-            return Result.ok(response);
+                    RegisterVehicleResponseDto response = new RegisterVehicleResponseDto("Vehicle registered successfully!");
+                    return Result.ok(response);
 
         } catch (Exception e) {
-            return Result.error(new Exception("Failed to register vehicle!"));
+            return Result.error(new Exception("Error registering vehicle!"));
         }
     }
 
+    //Metodo disable vehicle (DELETE).
+    //Aqui solo eliminamos la entidad por id.
     public Result<DisableVehicleResponseDto, Exception> disableVehicle(Long id) {
         try {
             return vehicleRepository.findById(id).map(vehicle -> {
@@ -57,13 +70,15 @@ public class VehicleService {
         }
     }
 
+    //Metodo list all vehicles (READ).
+    //Usamos el metodo toDto del mapper para mapear toda la coleccion.
     public Result<ListVehiclesResponseDto, Exception> listAllVehicles() {
         List<VehicleEntity> vehicleEntities = vehicleRepository.findAll();
 
         try {
-            List<VehicleDto> vehicleDtos = vehicleEntities.stream()
-                    .map(vehicle -> new VehicleDto(vehicle.getVehiclePlate(), vehicle.getModel(), vehicle.getBrand()))
-                    .toList();
+            //Usar el mapper para convertir la lista de entidades a lista de dtos.
+            List<VehicleDto> vehicleDtos = vehicleMapper.toDto(vehicleEntities);
+
             ListVehiclesResponseDto response = new ListVehiclesResponseDto(vehicleDtos, "vehicles found succesfull!");
             return Result.ok(response);
 
@@ -72,12 +87,16 @@ public class VehicleService {
         }
     }
 
+
+    //Metodo show vehicle by id (READ).
+    //Usamos el mapper para convertir la entidad a dto.
     public Result<VehicleResponseDto, Exception> showVehicle(Long id) {
         try {
             return vehicleRepository.findById(id)
-                    .map(vehicle -> {
-                        VehicleDto vehicleDto = new VehicleDto(vehicle.getVehiclePlate(), vehicle.getModel(),
-                                vehicle.getBrand());
+                    .map(vehicleEntity -> {
+                        //Usar el mapper para convertir la entidad a dto.
+                        VehicleDto vehicleDto = vehicleMapper.toDto(vehicleEntity);
+
                         VehicleResponseDto response = new VehicleResponseDto(vehicleDto, "Vehicle show succesfull!");
                         return Result.ok(response);
                     })
