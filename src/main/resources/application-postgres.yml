@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/db_pa
-    username: postgres
-    password: Dydd6832_*
+    url: jdbc:postgresql://localhost:5432/distributor_store_pa
+    username: br7forlife
+    password: 1043300860
   jpa:
     hibernate:
       ddl-auto: create-drop
