@@ -1,5 +1,8 @@
 package com.tecno_comfenalco.pa.features.store.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 
@@ -7,5 +10,15 @@ import com.tecno_comfenalco.pa.features.store.StoreEntity;
 
 @NoRepositoryBean
 public interface IStoreRepository extends Repository<StoreEntity, Long> {
+    StoreEntity save(StoreEntity storeEntity);
 
+    Optional<StoreEntity> findById(Long id);
+
+    Optional<StoreEntity> findByNIT(String nit);
+
+    List<StoreEntity> findAll();
+
+    boolean existsByNIT(Long nit);
+
+    void deleteById(Long id);
 }
