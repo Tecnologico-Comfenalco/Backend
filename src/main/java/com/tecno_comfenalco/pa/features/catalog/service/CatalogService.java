@@ -21,6 +21,7 @@ import com.tecno_comfenalco.pa.features.category.repository.ICategoryRepository;
 import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
 import com.tecno_comfenalco.pa.features.distributor.repository.IDistributorRepository;
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
+import com.tecno_comfenalco.pa.features.product.dto.ProductDto;
 import com.tecno_comfenalco.pa.features.product.repository.IProductRepository;
 import com.tecno_comfenalco.pa.security.CustomUserDetails;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
@@ -191,6 +192,16 @@ public class CatalogService {
                     .map(cat -> new GetCatalogResponseDto.CategoryDto(
                             cat.getId(),
                             cat.getName(),
+                            cat.getProducts().stream()
+                                    .map(pc -> {
+                                        ProductEntity prod = pc.getCategoryProduct().getProduct();
+                                        return new ProductDto(
+                                                prod.getId(),
+                                                prod.getName(),
+                                                prod.getPrice(),
+                                                prod.getUnit().toString());
+                                    })
+                                    .collect(Collectors.toList()),
                             cat.getProducts() != null ? cat.getProducts().size() : 0))
                     .collect(Collectors.toList());
 
