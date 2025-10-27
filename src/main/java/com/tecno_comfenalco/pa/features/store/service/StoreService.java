@@ -3,6 +3,8 @@ package com.tecno_comfenalco.pa.features.store.service;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,7 @@ import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 @Service
 public class StoreService {
+    private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
     @Autowired
     private IStoreRepository storeRepository;
 
@@ -63,7 +66,8 @@ public class StoreService {
             return Result.ok(response);
 
         } catch (Exception e) {
-            return Result.error(new Exception("Failed to register store!"));
+            logger.error("Error registering store: {}", e.getMessage(), e);
+            return Result.error(new Exception("Failed to register store: " + e.getMessage()));
         }
     }
 
