@@ -56,7 +56,7 @@ public class PresalesService {
             presalesEntity.setDocumentNumber(dtoPresales.documentNumber());
 
             Long userId = authenticationService.registerUser(
-                    new RegisterUserRequestDto(dtoPresales.name().toLowerCase().replace(" ", "_"),
+                    new RegisterUserRequestDto(dtoPresales.email().toLowerCase(),
                             "password", Set.of("PRESALES"), true))
                     .getValue().userId();
 
