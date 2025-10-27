@@ -84,10 +84,14 @@ public class DistributorService {
         try {
             return distributorRepository.findById(id)
                     .map(distributor -> {
-                        distributor.setName(dtoDistributor.name());
-                        distributor.setPhoneNumber(dtoDistributor.phoneNumber());
-                        distributor.setEmail(dtoDistributor.email());
-                        distributor.setDirection(dtoDistributor.direction());
+                        distributor.setName(
+                                dtoDistributor.name().isBlank() ? distributor.getName() : dtoDistributor.name());
+                        distributor.setPhoneNumber(dtoDistributor.phoneNumber().isBlank() ? distributor.getPhoneNumber()
+                                : dtoDistributor.phoneNumber());
+                        distributor.setEmail(
+                                dtoDistributor.email().isBlank() ? distributor.getEmail() : dtoDistributor.email());
+                        distributor.setDirection(dtoDistributor.direction().equals(null) ? distributor.getDirection()
+                                : dtoDistributor.direction());
 
                         distributorRepository.save(distributor);
 
