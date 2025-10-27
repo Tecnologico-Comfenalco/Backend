@@ -37,7 +37,7 @@ public class OrderController {
         return ResponseEntityHelper.toResponseEntity(result);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/cancel/{id}")
     public ResponseEntity<CancelledOrderResponseDto> cancelOrder(@PathVariable UUID id) {
         Result<CancelledOrderResponseDto, Exception> result = orderService.cancelOrder(id);
         return ResponseEntityHelper.toResponseEntity(result);
