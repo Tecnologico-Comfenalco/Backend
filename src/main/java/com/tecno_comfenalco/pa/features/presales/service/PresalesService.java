@@ -80,11 +80,15 @@ public class PresalesService {
             return presalesRepository.findById(id)
                     .map(presale -> {
 
-                        presale.setName(dtoPresales.name());
-                        presale.setPhoneNumber(dtoPresales.phoneNumber());
-                        presale.setEmail(dtoPresales.email());
-                        presale.setDocumentType(dtoPresales.documentTypeEnum());
-                        presale.setDocumentNumber(dtoPresales.documentNumber());
+                        presale.setName(dtoPresales.name().isBlank() ? presale.getName() : dtoPresales.name());
+                        presale.setPhoneNumber(dtoPresales.phoneNumber().isBlank() ? presale.getPhoneNumber()
+                                : dtoPresales.phoneNumber());
+                        presale.setEmail(dtoPresales.email().isBlank() ? presale.getEmail() : dtoPresales.email());
+                        presale.setDocumentType(dtoPresales.documentTypeEnum() == null ? presale.getDocumentType()
+                                : dtoPresales.documentTypeEnum());
+                        presale.setDocumentNumber(
+                                dtoPresales.documentNumber().toString().isBlank() ? presale.getDocumentNumber()
+                                        : dtoPresales.documentNumber());
 
                         presalesRepository.save(presale);
 
