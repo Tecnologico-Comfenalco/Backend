@@ -16,6 +16,8 @@ public interface IStoreRepository extends Repository<StoreEntity, Long> {
 
     Optional<StoreEntity> findByNIT(Long NIT);
 
+    Optional<StoreEntity> findByUser_Id(Long userId);
+
     List<StoreEntity> findAll();
 
     boolean existsByNIT(Long NIT);

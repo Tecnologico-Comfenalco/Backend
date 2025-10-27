@@ -33,7 +33,22 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request, HttpServletResponse response) {
         // Delegate authentication logic to AuthenticationService and keep HTTP handling
         // here
-        Result<LoginResponseDto, Exception> result = authenticationService.loginUser(request);
+        Result<LoginResponseDto, Exception> result = null;
+        try {
+            result = authenticationService.loginUser(request);
+        } catch (Exception ex) {
+            // limpiar sesión: borrar cookie jwt
+            Cookie cookie = new Cookie("jwt", "");
+            cookie.setHttpOnly(true);
+            cookie.setSecure(false);
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+            cookie.setAttribute("SameSite", "None");
+            response.addCookie(cookie);
+
+            // devolver objeto de error
+            return ResponseEntity.status(401).body(new LoginResponseDto("Error de autenticación", null));
+        }
 
         if (result == null || !result.isOk()) {
             // AuthenticationService returns an error Result with an Exception

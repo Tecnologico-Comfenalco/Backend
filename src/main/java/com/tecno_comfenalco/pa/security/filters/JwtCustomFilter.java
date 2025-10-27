@@ -51,17 +51,38 @@ public class JwtCustomFilter extends OncePerRequestFilter {
                 username = jwtUtils.decode(token);
             } catch (Exception e) {
                 System.out.println("Invalid JWT from cookie: " + e.getMessage());
-                // Si el token es inválido, podrías considerarlo un fallo y no seguir.
+                // Si el token es inválido, limpiar la cookie inmediatamente
+                Cookie invalidCookie = new Cookie("jwt", "");
+                invalidCookie.setHttpOnly(true);
+                invalidCookie.setSecure(false);
+                invalidCookie.setPath("/");
+                invalidCookie.setMaxAge(0);
+                invalidCookie.setAttribute("SameSite", "None");
+                response.addCookie(invalidCookie);
+                token = null; // Marcar token como nulo para no procesarlo más
             }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            try {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtUtils.validate(token)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                        null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtUtils.validate(token)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+                            null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                // Usuario no encontrado o token inválido - limpiar la cookie
+                System.out.println("Error loading user from JWT: " + e.getMessage());
+                Cookie invalidCookie = new Cookie("jwt", "");
+                invalidCookie.setHttpOnly(true);
+                invalidCookie.setSecure(false);
+                invalidCookie.setPath("/");
+                invalidCookie.setMaxAge(0);
+                invalidCookie.setAttribute("SameSite", "None");
+                response.addCookie(invalidCookie);
+                // No establecer autenticación - continuar como usuario anónimo
             }
         }
 

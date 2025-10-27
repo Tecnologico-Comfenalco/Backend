@@ -58,12 +58,16 @@ public class AuthenticationService {
 
         Long expirationTime = request.rememberMe() ? 7 * 24 * 60 * 60 * 1000L : expirationMs;
 
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        try {
+            Authentication authentication = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
-        String token = jwtUtils.encode(authentication.getName(), expirationTime);
+            String token = jwtUtils.encode(authentication.getName(), expirationTime);
 
-        return Result.ok(new LoginResponseDto("Usuario exitosamente autenticado", token));
+            return Result.ok(new LoginResponseDto("Usuario exitosamente autenticado", token));
+        } catch (Exception e) {
+            return Result.error(new Exception("Error al autenticar usuario: " + e.getMessage()));
+        }
     }
 
     public Result<DisableUserResponseDto, Exception> disableUser(Long userId) {
