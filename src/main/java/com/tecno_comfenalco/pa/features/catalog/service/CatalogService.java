@@ -1,19 +1,28 @@
 package com.tecno_comfenalco.pa.features.catalog.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.tecno_comfenalco.pa.features.catalog.CatalogEntity;
 import com.tecno_comfenalco.pa.features.catalog.ProductsCatalogEntity;
 import com.tecno_comfenalco.pa.features.catalog.dto.response.AddCategoryToCatalogResponseDto;
+import com.tecno_comfenalco.pa.features.catalog.dto.response.GetCatalogResponseDto;
+import com.tecno_comfenalco.pa.features.catalog.dto.response.GetCategoryProductsResponseDto;
 import com.tecno_comfenalco.pa.features.catalog.repository.ICatalogRepository;
 import com.tecno_comfenalco.pa.features.catalog.repository.IProductsCatalogRepository;
 import com.tecno_comfenalco.pa.features.category.CategoryEntity;
 import com.tecno_comfenalco.pa.features.category.repository.ICategoryRepository;
+import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
+import com.tecno_comfenalco.pa.features.distributor.repository.IDistributorRepository;
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
 import com.tecno_comfenalco.pa.features.product.repository.IProductRepository;
+import com.tecno_comfenalco.pa.security.CustomUserDetails;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 @Service
@@ -30,6 +39,9 @@ public class CatalogService {
 
     @Autowired
     private IProductRepository productRepository;
+
+    @Autowired
+    private IDistributorRepository distributorRepository;
 
     public Result<AddCategoryToCatalogResponseDto, Exception> addCategoryToCatalog(Long catalogId,
             String categoryName) {
@@ -78,6 +90,117 @@ public class CatalogService {
             return Result.ok(new AddCategoryToCatalogResponseDto("Product added successfully"));
         } catch (Exception e) {
             return Result.error(new Exception("Failed to add product to category: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Obtiene el catálogo de la distribuidora del usuario autenticado
+     * Funciona tanto para DISTRIBUTOR como para PRESALES (que pertenecen a una
+     * distribuidora)
+     */
+    public Result<GetCatalogResponseDto, Exception> getCatalogForAuthenticatedUser() {
+        try {
+            // Obtener el usuario autenticado
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+                    .getAuthentication().getPrincipal();
+            Long userId = userDetails.getUserId();
+
+            // Buscar la distribuidora asociada al usuario
+            Optional<DistributorEntity> distributorOpt = distributorRepository.findByUser_Id(userId);
+
+            if (distributorOpt.isEmpty()) {
+                return Result.error(new Exception("Distributor not found for the authenticated user"));
+            }
+
+            DistributorEntity distributor = distributorOpt.get();
+
+            // Buscar el catálogo de la distribuidora
+            Optional<CatalogEntity> catalogOpt = catalogRepository.findByDistributor_Id(distributor.getId());
+
+            if (catalogOpt.isEmpty()) {
+                return Result.error(new Exception("Catalog not found for this distributor"));
+            }
+
+            CatalogEntity catalog = catalogOpt.get();
+
+            // Obtener las categorías del catálogo
+            List<CategoryEntity> categories = categoryRepository.findByCatalog_Id(catalog.getId());
+
+            // Mapear a DTO
+            List<GetCatalogResponseDto.CategoryDto> categoryDtos = categories.stream()
+                    .map(cat -> new GetCatalogResponseDto.CategoryDto(
+                            cat.getId(),
+                            cat.getName(),
+                            cat.getProducts() != null ? cat.getProducts().size() : 0))
+                    .collect(Collectors.toList());
+
+            GetCatalogResponseDto response = new GetCatalogResponseDto(
+                    catalog.getId(),
+                    distributor.getId(),
+                    distributor.getName(),
+                    categoryDtos);
+
+            return Result.ok(response);
+
+        } catch (Exception e) {
+            return Result.error(new Exception("Failed to get catalog: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Obtiene los productos de una categoría específica
+     * Valida que la categoría pertenezca al catálogo del usuario autenticado
+     */
+    public Result<GetCategoryProductsResponseDto, Exception> getProductsByCategory(Long categoryId) {
+        try {
+            // Obtener el usuario autenticado
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+                    .getAuthentication().getPrincipal();
+            Long userId = userDetails.getUserId();
+
+            // Buscar la distribuidora asociada al usuario
+            Optional<DistributorEntity> distributorOpt = distributorRepository.findByUser_Id(userId);
+
+            if (distributorOpt.isEmpty()) {
+                return Result.error(new Exception("Distributor not found for the authenticated user"));
+            }
+
+            // Buscar la categoría
+            Optional<CategoryEntity> categoryOpt = categoryRepository.findById(categoryId);
+
+            if (categoryOpt.isEmpty()) {
+                return Result.error(new Exception("Category not found"));
+            }
+
+            CategoryEntity category = categoryOpt.get();
+
+            // Validar que la categoría pertenezca al catálogo de la distribuidora del
+            // usuario
+            if (!category.getCatalog().getDistributor().getId().equals(distributorOpt.get().getId())) {
+                return Result.error(new Exception("You don't have permission to access this category"));
+            }
+
+            // Obtener los productos de la categoría
+            List<ProductEntity> products = category.getProducts();
+
+            // Mapear a DTO
+            List<GetCategoryProductsResponseDto.ProductDto> productDtos = products.stream()
+                    .map(prod -> new GetCategoryProductsResponseDto.ProductDto(
+                            prod.getId(),
+                            prod.getName(),
+                            prod.getPrice(),
+                            prod.getUnit().toString()))
+                    .collect(Collectors.toList());
+
+            GetCategoryProductsResponseDto response = new GetCategoryProductsResponseDto(
+                    category.getId(),
+                    category.getName(),
+                    productDtos);
+
+            return Result.ok(response);
+
+        } catch (Exception e) {
+            return Result.error(new Exception("Failed to get category products: " + e.getMessage()));
         }
     }
 }

@@ -39,4 +39,8 @@ public class CustomUserDetails implements UserDetails {
         return userEntity.isEnabled();
     }
 
+    public Long getUserId() {
+        return userEntity.getId();
+    }
+
 }
