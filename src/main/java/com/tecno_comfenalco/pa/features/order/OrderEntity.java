@@ -8,6 +8,8 @@ import com.tecno_comfenalco.pa.features.store.StoreEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,6 +23,11 @@ import lombok.Data;
 @Table(name = "orders")
 @Data
 public class OrderEntity {
+    public enum OrderStatus {
+        PENDING,
+        COMPLETED,
+        CANCELLED
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -28,6 +35,9 @@ public class OrderEntity {
 
     private Double iva_percent;
     private Double total;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
     @ManyToOne
     @JoinColumn(name = "store_id", referencedColumnName = "id", nullable = false)

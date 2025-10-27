@@ -17,6 +17,10 @@ public interface IOrderRepository extends Repository<OrderEntity, UUID> {
 
     List<OrderEntity> findAll();
 
+    List<OrderEntity> findByStore_Id(Long storeId);
+
+    List<OrderEntity> findByPresales_Id(Long presalesId);
+
     boolean existsByid(UUID id);
 
     void deleteById(UUID id);

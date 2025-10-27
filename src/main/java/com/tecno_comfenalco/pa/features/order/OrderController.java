@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tecno_comfenalco.pa.features.order.dto.request.CreateOrderRequestDto;
-import com.tecno_comfenalco.pa.features.order.dto.response.CanceledOrderResponseDto;
+import com.tecno_comfenalco.pa.features.order.dto.response.CancelledOrderResponseDto;
 import com.tecno_comfenalco.pa.features.order.dto.response.CreateOrderResponseDto;
 import com.tecno_comfenalco.pa.features.order.dto.response.ListOrderResponseDto;
 import com.tecno_comfenalco.pa.features.order.dto.response.ShowOrderResponseDto;
@@ -38,8 +38,8 @@ public class OrderController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<CanceledOrderResponseDto> canceledOrder(@PathVariable UUID id) {
-        Result<CanceledOrderResponseDto, Exception> result = orderService.canceledOrder(id);
+    public ResponseEntity<CancelledOrderResponseDto> cancelOrder(@PathVariable UUID id) {
+        Result<CancelledOrderResponseDto, Exception> result = orderService.cancelOrder(id);
         return ResponseEntityHelper.toResponseEntity(result);
     }
 
