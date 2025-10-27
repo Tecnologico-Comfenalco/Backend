@@ -682,7 +682,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Coca Cola 2L\",\n  \"catalog_id\": 1,\n  \"price\": 5500.00,\n  \"unit\": \"LITER\"\n}"
+              "raw": "{\n  \"name\": \"Coca Cola 2L\",\n   \"price\": 5500.00,\n  \"unit\": \"LITER\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/products",
