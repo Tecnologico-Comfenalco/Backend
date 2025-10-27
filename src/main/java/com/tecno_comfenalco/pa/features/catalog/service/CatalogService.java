@@ -194,12 +194,11 @@ public class CatalogService {
                             cat.getName(),
                             cat.getProducts().stream()
                                     .map(pc -> {
-                                        ProductEntity prod = pc.getCategoryProduct().getProduct();
                                         return new ProductDto(
-                                                prod.getId(),
-                                                prod.getName(),
-                                                prod.getPrice(),
-                                                prod.getUnit().toString());
+                                                pc.getId(),
+                                                pc.getName(),
+                                                pc.getPrice(),
+                                                pc.getUnit().toString());
                                     })
                                     .collect(Collectors.toList()),
                             cat.getProducts() != null ? cat.getProducts().size() : 0))
