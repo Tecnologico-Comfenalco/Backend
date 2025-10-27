@@ -84,7 +84,6 @@ public class DistributorService {
         try {
             return distributorRepository.findById(id)
                     .map(distributor -> {
-                        distributor.setNIT(dtoDistributor.NIT());
                         distributor.setName(dtoDistributor.name());
                         distributor.setPhoneNumber(dtoDistributor.phoneNumber());
                         distributor.setEmail(dtoDistributor.email());
@@ -99,7 +98,7 @@ public class DistributorService {
 
                     }).orElseGet(() -> Result.error(new Exception("Distributor not found!")));
         } catch (Exception e) {
-            return Result.error(new Exception("Distributor not exists by id cause!"));
+            return Result.error(new Exception("Error editing distributor!", e));
         }
     }
 
