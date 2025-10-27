@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.catalog.CatalogEntity;
 import com.tecno_comfenalco.pa.features.catalog.repository.ICatalogRepository;
 import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
 import com.tecno_comfenalco.pa.features.distributor.dto.DistributorDto;
+import com.tecno_comfenalco.pa.features.distributor.dto.mapper.DistributorMapper;
 import com.tecno_comfenalco.pa.features.distributor.dto.request.EditDistributorRequestDto;
 import com.tecno_comfenalco.pa.features.distributor.dto.request.RegisterDistributorRequestDto;
 import com.tecno_comfenalco.pa.features.distributor.dto.response.DistributorResponseDto;
@@ -25,17 +27,22 @@ import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 @Service
 public class DistributorService {
-    @Autowired
-    private IDistributorRepository distributorRepository;
+    //Declaracion de dependencias como final para inyeccion de dependencias.
+    private final IDistributorRepository distributorRepository;
+    private final AuthenticationService authenticationService;
+    private final IUserRepository userRepository;
+    private final ICatalogRepository catalogRepository;
 
-    @Autowired
-    private AuthenticationService authenticationService;
+    private final DistributorMapper distributorMapper; // Mapper para Distributor.
 
-    @Autowired
-    private ICatalogRepository catalogRepository;
-
-    @Autowired
-    private IUserRepository userRepository;
+    //Constructor para inyeccion de dependencias.
+    public DistributorService(IDistributorRepository distributorRepository, AuthenticationService authenticationService,IUserRepository userRepository, ICatalogRepository catalogRepository,DistributorMapper distributorMapper) {
+        this.distributorRepository = distributorRepository;
+        this.authenticationService = authenticationService;
+        this.userRepository = userRepository;
+        this.catalogRepository = catalogRepository;
+        this.distributorMapper = distributorMapper;
+    }
 
     public Result<RegisterDistributorResponseDto, Exception> newDistributor(
             RegisterDistributorRequestDto dtoDistributor) {
@@ -47,14 +54,19 @@ public class DistributorService {
         }
 
         try {
+            //Usamos el mapper para convertir el dto a entidad.
+            DistributorDto baseDto = new DistributorDto(null,
+                dtoDistributor.NIT(),
+                dtoDistributor.name(),
+                dtoDistributor.phoneNumber(),
+                dtoDistributor.email(),
+                dtoDistributor.direction()
+                    
+            );
 
-            DistributorEntity distributorEntity = new DistributorEntity();
-            distributorEntity.setNIT(dtoDistributor.NIT());
-            distributorEntity.setName(dtoDistributor.name());
-            distributorEntity.setPhoneNumber(dtoDistributor.phoneNumber());
-            distributorEntity.setEmail(dtoDistributor.email());
-            distributorEntity.setDirection(dtoDistributor.direction());
-
+            DistributorEntity distributorEntity = distributorMapper.toEntity(baseDto);
+            
+            //Crear el usuario asociado al distribuidor.
             Long userId = authenticationService.registerUser(
                     new RegisterUserRequestDto(dtoDistributor.name().toLowerCase().replace(" ", "_"),
                             "password", Set.of("DISTRIBUTOR"), true))
@@ -62,10 +74,12 @@ public class DistributorService {
 
             UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new Exception("User not found!"));
 
+            //Relacionar el usuario con el distribuidor.
             distributorEntity.setUser(userEntity);
 
             distributorRepository.save(distributorEntity);
 
+            //Crear el catalogo asociado al distribuidor.
             var catalogOfDistributor = new CatalogEntity();
             catalogOfDistributor.setDistributor(distributorEntity);
             catalogRepository.save(catalogOfDistributor);
@@ -84,11 +98,18 @@ public class DistributorService {
         try {
             return distributorRepository.findById(id)
                     .map(distributor -> {
-                        distributor.setNIT(dtoDistributor.NIT());
-                        distributor.setName(dtoDistributor.name());
-                        distributor.setPhoneNumber(dtoDistributor.phoneNumber());
-                        distributor.setEmail(dtoDistributor.email());
-                        distributor.setDirection(dtoDistributor.direction());
+                        //Crear dto de actualizacion.
+                        DistributorDto updateDto = new DistributorDto(
+                            id,
+                            dtoDistributor.NIT(),
+                            dtoDistributor.name(),
+                            dtoDistributor.phoneNumber(),
+                            dtoDistributor.email(),
+                            dtoDistributor.direction()
+                        );
+
+                        //Aplicar actualizacion con el mapper.
+                        distributorMapper.updateEntityFromDto(updateDto, distributor);
 
                         distributorRepository.save(distributor);
 
@@ -107,14 +128,13 @@ public class DistributorService {
         List<DistributorEntity> distributorEntities = distributorRepository.findAll();
 
         try {
+            //Reemplamoz el stream/map por el uso del mapper para listas.
+            List<DistributorDto> distributorDtos = distributorMapper.toDto(distributorEntities);
 
-            List<DistributorDto> distributorDtos = distributorEntities.stream()
-                    .map(distributor -> new DistributorDto(distributor.getId(), distributor.getNIT(),
-                            distributor.getName(), distributor.getPhoneNumber(), distributor.getEmail(),
-                            distributor.getDirection()))
-                    .toList();
+            ListDistributorsResponseDto responseDto = new ListDistributorsResponseDto(distributorDtos,
+                    "Distributors retrieved succesfull");
 
-            return Result.ok(new ListDistributorsResponseDto(distributorDtos, "Distributors found succesfull!"));
+            return Result.ok(responseDto);
         } catch (Exception e) {
             return Result.error(new Exception("Error retrieving distributors!"));
         }
@@ -123,13 +143,14 @@ public class DistributorService {
     public Result<DistributorResponseDto, Exception> showDistributor(Long id) {
         try {
             return distributorRepository.findById(id).map(distributor -> {
-                DistributorDto distributorDto = new DistributorDto(distributor.getId(), distributor.getNIT(),
-                        distributor.getName(), distributor.getPhoneNumber(), distributor.getEmail(),
-                        distributor.getDirection());
+                DistributorDto distributorDto = distributorMapper.toDto(distributor);
 
-                return Result.ok(new DistributorResponseDto(distributorDto, "Distributor found succesfull"));
+                DistributorResponseDto responseDto = new DistributorResponseDto(distributorDto,
+                        "Distributor retrieved succesfull");
 
-            }).orElseThrow();
+                return Result.ok(responseDto);
+
+            }).orElseGet(() -> Result.error(new Exception("Distributor not found!")));
 
         } catch (Exception e) {
             return Result.error(new Exception("Error retrieving Distributor!"));
