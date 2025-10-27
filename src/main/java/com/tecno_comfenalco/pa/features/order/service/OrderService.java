@@ -21,10 +21,12 @@ import com.tecno_comfenalco.pa.features.order.dto.response.ListOrderResponseDto;
 import com.tecno_comfenalco.pa.features.order.dto.response.ShowOrderResponseDto;
 import com.tecno_comfenalco.pa.features.order.repository.IOrderRepository;
 import com.tecno_comfenalco.pa.features.presales.PresalesEntity;
+import com.tecno_comfenalco.pa.features.presales.dto.PresalesDto;
 import com.tecno_comfenalco.pa.features.presales.repository.IPresalesRepository;
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
 import com.tecno_comfenalco.pa.features.product.repository.IProductRepository;
 import com.tecno_comfenalco.pa.features.store.StoreEntity;
+import com.tecno_comfenalco.pa.features.store.dto.StoreDto;
 import com.tecno_comfenalco.pa.features.store.repository.IStoreRepository;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
@@ -153,7 +155,17 @@ public class OrderService {
         try {
             List<OrderDto> orderDtos = orderEntities.stream()
                     .map(order -> new OrderDto(order.getId(), order.getIva_percent(), order.getTotal(),
-                            order.getStore(), order.getPresales(), order.getOrderDetails()))
+                            new StoreDto(order.getStore().getNIT(), order.getStore().getName(),
+                                    order.getStore().getPhoneNumber(), order.getStore().getEmail(),
+                                    order.getStore().getDirection()),
+                            new PresalesDto(order.getPresales().getId(),
+                                    order.getPresales().getName(), order.getPresales().getPhoneNumber(),
+                                    order.getPresales().getEmail(), order.getPresales().getDocumentType(),
+                                    order.getPresales().getDocumentNumber(), order.getPresales().getUser().getId(),
+                                    order.getPresales().getDistributor().getId()),
+                            order.getOrderDetails().stream().map(detail -> new OrderProductDto(
+                                    detail.getProduct().getId(),
+                                    detail.getQuantity())).toList()))
                     .toList();
 
             ListOrderResponseDto response = new ListOrderResponseDto(orderDtos, "orders successfully obtained");
@@ -169,7 +181,17 @@ public class OrderService {
         try {
             return orderRepository.findByid(id).map(order -> {
                 OrderDto orderDto = new OrderDto(order.getId(), order.getIva_percent(), order.getTotal(),
-                        order.getStore(), order.getPresales(), order.getOrderDetails());
+                        new StoreDto(order.getStore().getNIT(), order.getStore().getName(),
+                                order.getStore().getPhoneNumber(), order.getStore().getEmail(),
+                                order.getStore().getDirection()),
+                        new PresalesDto(order.getPresales().getId(),
+                                order.getPresales().getName(), order.getPresales().getPhoneNumber(),
+                                order.getPresales().getEmail(), order.getPresales().getDocumentType(),
+                                order.getPresales().getDocumentNumber(), order.getPresales().getUser().getId(),
+                                order.getPresales().getDistributor().getId()),
+                        order.getOrderDetails().stream().map(detail -> new OrderProductDto(
+                                detail.getProduct().getId(),
+                                detail.getQuantity())).toList());
 
                 ShowOrderResponseDto response = new ShowOrderResponseDto(orderDto, "Order succesfull obtain!");
 
