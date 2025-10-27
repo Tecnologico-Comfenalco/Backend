@@ -24,7 +24,7 @@ import com.tecno_comfenalco.pa.shared.utils.result.Result;
 import jakarta.validation.Valid;
 
 @RestController
-@PreAuthorize("hasAnyRole('ADMIN', 'DISTRIBUTOR')")
+@PreAuthorize("hasAnyRole('ADMIN')")
 @RequestMapping("/distributors")
 public class DistributorController {
 
