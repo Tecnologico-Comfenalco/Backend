@@ -43,20 +43,40 @@ public class CatalogService {
     @Autowired
     private IDistributorRepository distributorRepository;
 
-    public Result<AddCategoryToCatalogResponseDto, Exception> addCategoryToCatalog(Long catalogId,
-            String categoryName) {
+    /**
+     * Agrega una categoría al catálogo de la distribuidora autenticada
+     * Detecta automáticamente el catálogo del usuario logueado
+     */
+    public Result<AddCategoryToCatalogResponseDto, Exception> addCategoryToCatalog(String categoryName) {
 
         try {
-            var catalogOpt = catalogRepository.findById(catalogId);
+            // Obtener el usuario autenticado
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+                    .getAuthentication().getPrincipal();
+            Long userId = userDetails.getUserId();
 
-            if (catalogOpt.isEmpty()) {
-                return Result.error(new Exception("Catalog not found"));
+            // Buscar la distribuidora asociada al usuario
+            Optional<DistributorEntity> distributorOpt = distributorRepository.findByUser_Id(userId);
+
+            if (distributorOpt.isEmpty()) {
+                return Result.error(new Exception("Distributor not found for the authenticated user"));
             }
 
+            DistributorEntity distributor = distributorOpt.get();
+
+            // Buscar el catálogo de la distribuidora
+            Optional<CatalogEntity> catalogOpt = catalogRepository.findByDistributor_Id(distributor.getId());
+
+            if (catalogOpt.isEmpty()) {
+                return Result.error(new Exception("Catalog not found for this distributor"));
+            }
+
+            CatalogEntity catalog = catalogOpt.get();
+
+            // Crear la nueva categoría
             CategoryEntity category = new CategoryEntity();
             category.setName(categoryName);
-
-            category.setCatalog(catalogOpt.get());
+            category.setCatalog(catalog);
 
             categoryRepository.save(category);
 
@@ -66,24 +86,64 @@ public class CatalogService {
         }
     }
 
+    /**
+     * Agrega un producto a una categoría
+     * Valida automáticamente que la categoría pertenezca al catálogo de la
+     * distribuidora autenticada
+     */
     public Result<AddCategoryToCatalogResponseDto, Exception> addProductToCategory(Long categoryId, UUID productId) {
         try {
+            // Obtener el usuario autenticado
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+                    .getAuthentication().getPrincipal();
+            Long userId = userDetails.getUserId();
 
+            // Buscar la distribuidora asociada al usuario
+            Optional<DistributorEntity> distributorOpt = distributorRepository.findByUser_Id(userId);
+
+            if (distributorOpt.isEmpty()) {
+                return Result.error(new Exception("Distributor not found for the authenticated user"));
+            }
+
+            DistributorEntity distributor = distributorOpt.get();
+
+            // Buscar el catálogo de la distribuidora
+            Optional<CatalogEntity> catalogOpt = catalogRepository.findByDistributor_Id(distributor.getId());
+
+            if (catalogOpt.isEmpty()) {
+                return Result.error(new Exception("Catalog not found for this distributor"));
+            }
+
+            CatalogEntity catalog = catalogOpt.get();
+
+            // Buscar la categoría
             Optional<CategoryEntity> categoryOpt = categoryRepository.findById(categoryId);
 
             if (categoryOpt.isEmpty()) {
                 return Result.error(new Exception("Category not found"));
             }
 
+            CategoryEntity category = categoryOpt.get();
+
+            // Validar que la categoría pertenezca al catálogo de la distribuidora
+            if (!category.getCatalog().getId().equals(catalog.getId())) {
+                return Result.error(
+                        new Exception("You don't have permission to add products to this category"));
+            }
+
+            // Buscar el producto
             Optional<ProductEntity> productOpt = productRepository.findById(productId);
 
             if (productOpt.isEmpty()) {
                 return Result.error(new Exception("Product not found"));
             }
 
+            ProductEntity product = productOpt.get();
+
+            // Crear la relación entre categoría y producto
             ProductsCatalogEntity categoryProduct = new ProductsCatalogEntity();
-            categoryProduct.setCategory(categoryOpt.get());
-            categoryProduct.setProduct(productOpt.get());
+            categoryProduct.setCategory(category);
+            categoryProduct.setProduct(product);
 
             productsCatalogRepository.save(categoryProduct);
 

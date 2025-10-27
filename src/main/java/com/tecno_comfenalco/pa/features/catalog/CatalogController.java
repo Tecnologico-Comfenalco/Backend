@@ -29,15 +29,15 @@ public class CatalogController {
     private CatalogService catalogService;
 
     /**
-     * Agrega una categoría a un catálogo
+     * Agrega una categoría al catálogo de la distribuidora autenticada
      * Solo DISTRIBUTOR puede ejecutar este método
+     * El catálogo se detecta automáticamente según el usuario logueado
      */
-    @PostMapping("/{catalogId}/categories")
+    @PostMapping("/categories")
     @PreAuthorize("hasRole('DISTRIBUTOR')")
     public ResponseEntity<AddCategoryToCatalogResponseDto> addCategoryToCatalog(
-            @PathVariable Long catalogId,
             @RequestBody @Valid AddCategoryToCatalogRequestDto request) {
-        Result<AddCategoryToCatalogResponseDto, Exception> result = catalogService.addCategoryToCatalog(catalogId,
+        Result<AddCategoryToCatalogResponseDto, Exception> result = catalogService.addCategoryToCatalog(
                 request.name());
         return ResponseEntityHelper.toResponseEntity(result);
     }
@@ -45,6 +45,8 @@ public class CatalogController {
     /**
      * Agrega un producto existente a una categoría
      * Solo DISTRIBUTOR puede ejecutar este método
+     * Valida automáticamente que la categoría pertenezca al catálogo del usuario
+     * autenticado
      */
     @PostMapping("/categories/{categoryId}/products")
     @PreAuthorize("hasRole('DISTRIBUTOR')")
@@ -72,7 +74,7 @@ public class CatalogController {
      * Tanto DISTRIBUTOR como PRESALES pueden ver, pero solo de su propia
      * distribuidora
      */
-    @GetMapping("/categories/{categoryId}/products")
+    @GetMapping("/{categoryId}/products")
     @PreAuthorize("hasAnyRole('DISTRIBUTOR', 'PRESALES')")
     public ResponseEntity<GetCategoryProductsResponseDto> getProductsByCategory(@PathVariable Long categoryId) {
         Result<GetCategoryProductsResponseDto, Exception> result = catalogService.getProductsByCategory(categoryId);
