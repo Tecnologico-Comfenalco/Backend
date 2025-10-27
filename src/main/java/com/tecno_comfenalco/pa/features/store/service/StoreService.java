@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.store.StoreEntity;
 import com.tecno_comfenalco.pa.features.store.dto.StoreDto;
@@ -21,6 +22,7 @@ import com.tecno_comfenalco.pa.security.dto.requests.RegisterUserRequestDto;
 import com.tecno_comfenalco.pa.security.repository.IUserRepository;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
+@Service
 public class StoreService {
     @Autowired
     private IStoreRepository storeRepository;

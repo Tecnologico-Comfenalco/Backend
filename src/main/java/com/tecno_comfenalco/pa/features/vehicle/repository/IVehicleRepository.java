@@ -14,11 +14,9 @@ public interface IVehicleRepository extends Repository<VehicleEntity, Long> {
 
     Optional<VehicleEntity> findById(Long id);
 
-    Optional<VehicleEntity> findByVehiclePlate(String name);
+    Optional<VehicleEntity> findByVehiclePlate(String plate);
 
     List<VehicleEntity> findAll();
-
-    boolean existsByName(String name);
 
     void deleteById(Long id);
 }

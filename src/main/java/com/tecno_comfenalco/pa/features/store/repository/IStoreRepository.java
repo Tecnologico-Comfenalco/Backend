@@ -14,13 +14,13 @@ public interface IStoreRepository extends Repository<StoreEntity, Long> {
 
     Optional<StoreEntity> findById(Long id);
 
-    Optional<StoreEntity> findByNIT(String nit);
+    Optional<StoreEntity> findByNIT(Long NIT);
 
     List<StoreEntity> findAll();
 
-    boolean existsByNIT(Long nit);
+    boolean existsByNIT(Long NIT);
 
-    boolean existsById(Long id);
+    boolean existsById(Long NIT);
 
     void deleteById(Long id);
 }

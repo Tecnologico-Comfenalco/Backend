@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.tecno_comfenalco.pa.features.order.OrderDetailEntity;
 import com.tecno_comfenalco.pa.features.order.OrderDetailIdEmbedded;
@@ -27,6 +28,7 @@ import com.tecno_comfenalco.pa.features.store.StoreEntity;
 import com.tecno_comfenalco.pa.features.store.repository.IStoreRepository;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
+@Service
 public class OrderService {
     @Autowired
     private IOrderRepository orderRepository;

@@ -22,41 +22,35 @@ public class VehicleService {
     @Autowired
     private IVehicleRepository vehicleRepository;
 
-    private final VehicleMapper vehicleMapper;
+    @Autowired
+    private VehicleMapper vehicleMapper;
 
-    //Definimos el constructor para inyectar el mapper.
-    public VehicleService(IVehicleRepository  vehicleRepository, VehicleMapper vehicleMapper) {
-        this.vehicleRepository = vehicleRepository;
-        this.vehicleMapper = vehicleMapper;
-    }
-
-    //Implementacion de nuevo metodo Vechicle(CREATE).
-    //Se usa el mapper para convertir entre dto de request a entidad.
+    // Implementacion de nuevo metodo Vechicle(CREATE).
+    // Se usa el mapper para convertir entre dto de request a entidad.
 
     public Result<RegisterVehicleResponseDto, Exception> newVehicle(RegisterVehicleRequestDto dtoVehicle) {
-        
 
-        if (vehicleRepository.existsByName(dtoVehicle.vehiclePlate())) {
+        if (vehicleRepository.findByVehiclePlate(dtoVehicle.vehiclePlate()).isPresent()) {
             return Result.error(new Exception("Vehicle plate already exists!"));
         }
 
-        //Usamos el mapper para convertir el dto a entidad.
+        // Usamos el mapper para convertir el dto a entidad.
         try {
             VehicleEntity vehicleEntity = vehicleMapper.toEntity(
                     new VehicleDto(dtoVehicle.vehiclePlate(), dtoVehicle.model(), dtoVehicle.brand()));
 
-                    vehicleEntity = vehicleRepository.save(vehicleEntity);
+            vehicleEntity = vehicleRepository.save(vehicleEntity);
 
-                    RegisterVehicleResponseDto response = new RegisterVehicleResponseDto("Vehicle registered successfully!");
-                    return Result.ok(response);
+            RegisterVehicleResponseDto response = new RegisterVehicleResponseDto("Vehicle registered successfully!");
+            return Result.ok(response);
 
         } catch (Exception e) {
             return Result.error(new Exception("Error registering vehicle!"));
         }
     }
 
-    //Metodo disable vehicle (DELETE).
-    //Aqui solo eliminamos la entidad por id.
+    // Metodo disable vehicle (DELETE).
+    // Aqui solo eliminamos la entidad por id.
     public Result<DisableVehicleResponseDto, Exception> disableVehicle(Long id) {
         try {
             return vehicleRepository.findById(id).map(vehicle -> {
@@ -70,13 +64,13 @@ public class VehicleService {
         }
     }
 
-    //Metodo list all vehicles (READ).
-    //Usamos el metodo toDto del mapper para mapear toda la coleccion.
+    // Metodo list all vehicles (READ).
+    // Usamos el metodo toDto del mapper para mapear toda la coleccion.
     public Result<ListVehiclesResponseDto, Exception> listAllVehicles() {
         List<VehicleEntity> vehicleEntities = vehicleRepository.findAll();
 
         try {
-            //Usar el mapper para convertir la lista de entidades a lista de dtos.
+            // Usar el mapper para convertir la lista de entidades a lista de dtos.
             List<VehicleDto> vehicleDtos = vehicleMapper.toDto(vehicleEntities);
 
             ListVehiclesResponseDto response = new ListVehiclesResponseDto(vehicleDtos, "vehicles found succesfull!");
@@ -87,14 +81,13 @@ public class VehicleService {
         }
     }
 
-
-    //Metodo show vehicle by id (READ).
-    //Usamos el mapper para convertir la entidad a dto.
+    // Metodo show vehicle by id (READ).
+    // Usamos el mapper para convertir la entidad a dto.
     public Result<VehicleResponseDto, Exception> showVehicle(Long id) {
         try {
             return vehicleRepository.findById(id)
                     .map(vehicleEntity -> {
-                        //Usar el mapper para convertir la entidad a dto.
+                        // Usar el mapper para convertir la entidad a dto.
                         VehicleDto vehicleDto = vehicleMapper.toDto(vehicleEntity);
 
                         VehicleResponseDto response = new VehicleResponseDto(vehicleDto, "Vehicle show succesfull!");
