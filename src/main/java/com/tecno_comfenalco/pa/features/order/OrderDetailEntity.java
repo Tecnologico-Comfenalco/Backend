@@ -30,4 +30,7 @@ public class OrderDetailEntity {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @Column(name = "unit_price", nullable = false)
+    private Double unitPrice;
+
 }

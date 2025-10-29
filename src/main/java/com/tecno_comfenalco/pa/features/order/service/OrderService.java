@@ -88,9 +88,10 @@ public class OrderService {
                 orderDetailEntity.setOrder(order);
                 orderDetailEntity.setProduct(productEntity);
                 orderDetailEntity.setQuantity(p.quantity());
+                orderDetailEntity.setUnitPrice(productEntity.getPrice());
 
                 details.add(orderDetailEntity);
-                total += productEntity.getPrice() * p.quantity();
+                total += orderDetailEntity.getUnitPrice() * orderDetailEntity.getQuantity();
             }
 
             order.setTotal(total);
@@ -243,7 +244,8 @@ public class OrderService {
                                     : null,
                             order.getOrderDetails().stream().map(detail -> new OrderProductDto(
                                     detail.getProduct().getId(),
-                                    detail.getQuantity())).toList()))
+                                    detail.getQuantity(),
+                                    detail.getUnitPrice())).toList()))
                     .toList();
 
             ListOrderResponseDto response = new ListOrderResponseDto(orderDtos, "Orders successfully obtained");
@@ -330,7 +332,8 @@ public class OrderService {
                             : null,
                     order.getOrderDetails().stream().map(detail -> new OrderProductDto(
                             detail.getProduct().getId(),
-                            detail.getQuantity())).toList());
+                            detail.getQuantity(),
+                            detail.getUnitPrice())).toList());
 
             ShowOrderResponseDto response = new ShowOrderResponseDto(orderDto, "Order successfully obtained!");
 
