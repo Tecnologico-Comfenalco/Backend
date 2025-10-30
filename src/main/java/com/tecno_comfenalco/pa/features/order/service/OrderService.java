@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
+import com.tecno_comfenalco.pa.features.distributor.repository.IDistributorRepository;
 import com.tecno_comfenalco.pa.features.order.OrderDetailEntity;
 import com.tecno_comfenalco.pa.features.order.OrderDetailIdEmbedded;
 import com.tecno_comfenalco.pa.features.order.OrderEntity;
@@ -25,8 +27,10 @@ import com.tecno_comfenalco.pa.features.presales.repository.IPresalesRepository;
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
 import com.tecno_comfenalco.pa.features.product.repository.IProductRepository;
 import com.tecno_comfenalco.pa.features.store.StoreEntity;
+import com.tecno_comfenalco.pa.features.store.StoresDistributorsEntity;
 import com.tecno_comfenalco.pa.features.store.dto.StoreDto;
 import com.tecno_comfenalco.pa.features.store.repository.IStoreRepository;
+import com.tecno_comfenalco.pa.features.store.repository.IStoresDistributorsRepository;
 import com.tecno_comfenalco.pa.security.CustomUserDetails;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
@@ -44,29 +48,71 @@ public class OrderService {
     @Autowired
     private IProductRepository productRepository;
 
+    @Autowired
+    private IStoresDistributorsRepository storesDistributorsRepository;
+
+    @Autowired
+    private IDistributorRepository distributorRepository;
+
     public Result<CreateOrderResponseDto, Exception> createOrder(CreateOrderRequestDto dtoOrder) {
-        // validar que la tienda exista !importante
+        // Validar que la tienda exista
         var optionalStore = storeRepository.findById(dtoOrder.store_id());
         if (optionalStore.isEmpty()) {
             return Result.error(new Exception("The store does not exist!"));
         }
         StoreEntity store = optionalStore.get();
 
-        // el preventista puede ser nulo en este caso porque un pedido puede ser
-        // realizado enteramente por la tienda
-        PresalesEntity presale = presalesRepository.findById(dtoOrder.presales_id()).orElse(null);
+        // Validar que la distribuidora exista
+        var optionalDistributor = distributorRepository.findById(dtoOrder.distributor_id());
+        if (optionalDistributor.isEmpty()) {
+            return Result.error(new Exception("The distributor does not exist!"));
+        }
+        DistributorEntity distributor = optionalDistributor.get();
+
+        // El preventista es opcional - puede ser null si la tienda pide directamente
+        PresalesEntity presale = null;
+        if (dtoOrder.presales_id() != null) {
+            var optionalPresales = presalesRepository.findById(dtoOrder.presales_id());
+            if (optionalPresales.isEmpty()) {
+                return Result.error(new Exception("The presales does not exist!"));
+            }
+            presale = optionalPresales.get();
+
+            // Validar que el preventista pertenezca a la distribuidora especificada
+            if (!presale.getDistributor().getId().equals(distributor.getId())) {
+                return Result.error(new Exception(
+                        "The presales does not belong to the specified distributor!"));
+            }
+        }
 
         try {
+            /*
+             * Verificar/crear la relación entre la tienda y la distribuidora
+             * Si la relación no existe (tienda auto-registrada haciendo su primer pedido),
+             * se crea automáticamente
+             */
+            var relationshipOpt = storesDistributorsRepository
+                    .findByStore_IdAndDistributor_Id(store.getId(), distributor.getId());
+
+            if (relationshipOpt.isEmpty()) {
+                // La relación no existe, crear automáticamente
+                StoresDistributorsEntity newRelationship = new StoresDistributorsEntity();
+                newRelationship.setStore(store);
+                newRelationship.setDistributor(distributor);
+                newRelationship.setInternalClientCode(null); // El distribuidor puede asignarlo después
+                storesDistributorsRepository.save(newRelationship);
+            }
 
             /*
-             * Empezamos seteando la entidad pedidos con su iva fijo de 19%, con su tienda y
-             * preventista si este existe!
+             * Empezamos seteando la entidad pedidos con su iva fijo de 19%, con su tienda,
+             * preventista (si existe) y distribuidora
              */
             OrderEntity order = new OrderEntity();
             order.setIva_percent(0.19);
             order.setStore(store);
-            order.setPresales(presale);
+            order.setPresales(presale); // Puede ser null si la tienda pide directamente
             order.setStatus(OrderEntity.OrderStatus.PENDING);
+            order.setDistributorId(distributor.getId()); // Guardar el ID de la distribuidora
 
             // preparamos el arrayList de detalles de pedido
             List<OrderDetailEntity> details = new ArrayList<>();
@@ -229,23 +275,39 @@ public class OrderService {
 
             // Mapear las entidades a DTOs
             List<OrderDto> orderDtos = orderEntities.stream()
-                    .map(order -> new OrderDto(order.getId(), order.getIva_percent(), order.getTotal(),
-                            order.getStatus(),
-                            new StoreDto(order.getStore().getNIT(), order.getStore().getName(),
-                                    order.getStore().getPhoneNumber(), order.getStore().getEmail(),
-                                    order.getStore().getDirection()),
-                            order.getPresales() != null
-                                    ? new PresalesDto(order.getPresales().getId(),
-                                            order.getPresales().getName(), order.getPresales().getPhoneNumber(),
-                                            order.getPresales().getEmail(), order.getPresales().getDocumentType(),
-                                            order.getPresales().getDocumentNumber(),
-                                            order.getPresales().getUser().getId(),
-                                            order.getPresales().getDistributor().getId())
-                                    : null,
-                            order.getOrderDetails().stream().map(detail -> new OrderProductDto(
-                                    detail.getProduct().getId(),
-                                    detail.getQuantity(),
-                                    detail.getUnitPrice())).toList()))
+                    .map(order -> {
+                        // Obtener el código interno desde la relación StoresDistributors
+                        String internalClientCode = null;
+                        var relationshipOpt = storesDistributorsRepository
+                                .findByStore_IdAndDistributor_Id(order.getStore().getId(), order.getDistributorId());
+                        if (relationshipOpt.isPresent()) {
+                            internalClientCode = relationshipOpt.get().getInternalClientCode();
+                        }
+
+                        return new OrderDto(
+                                order.getId(),
+                                order.getIva_percent(),
+                                order.getTotal(),
+                                order.getStatus(),
+                                new StoreDto(order.getStore().getNIT(), order.getStore().getName(),
+                                        order.getStore().getPhoneNumber(), order.getStore().getEmail(),
+                                        order.getStore().getDirection()),
+                                order.getPresales() != null
+                                        ? new PresalesDto(order.getPresales().getId(),
+                                                order.getPresales().getName(), order.getPresales().getPhoneNumber(),
+                                                order.getPresales().getEmail(), order.getPresales().getDocumentType(),
+                                                order.getPresales().getDocumentNumber(),
+                                                order.getPresales().getUser().getId(),
+                                                order.getPresales().getDistributor().getId())
+                                        : null,
+                                order.getOrderDetails().stream().map(detail -> new OrderProductDto(
+                                        detail.getProduct().getId(),
+                                        detail.getQuantity(),
+                                        detail.getUnitPrice())).toList(),
+                                internalClientCode, // Código interno desde la relación StoresDistributors
+                                order.getDistributorId() // ID de la distribuidora
+                        );
+                    })
                     .toList();
 
             ListOrderResponseDto response = new ListOrderResponseDto(orderDtos, "Orders successfully obtained");
@@ -317,8 +379,19 @@ public class OrderService {
                 return Result.error(new Exception("User does not have STORE or PRESALES role"));
             }
 
+            // Obtener el código interno desde la relación StoresDistributors
+            String internalClientCode = null;
+            var relationshipOpt = storesDistributorsRepository
+                    .findByStore_IdAndDistributor_Id(order.getStore().getId(), order.getDistributorId());
+            if (relationshipOpt.isPresent()) {
+                internalClientCode = relationshipOpt.get().getInternalClientCode();
+            }
+
             // Mapear a DTO
-            OrderDto orderDto = new OrderDto(order.getId(), order.getIva_percent(), order.getTotal(),
+            OrderDto orderDto = new OrderDto(
+                    order.getId(),
+                    order.getIva_percent(),
+                    order.getTotal(),
                     order.getStatus(),
                     new StoreDto(order.getStore().getNIT(), order.getStore().getName(),
                             order.getStore().getPhoneNumber(), order.getStore().getEmail(),
@@ -333,7 +406,10 @@ public class OrderService {
                     order.getOrderDetails().stream().map(detail -> new OrderProductDto(
                             detail.getProduct().getId(),
                             detail.getQuantity(),
-                            detail.getUnitPrice())).toList());
+                            detail.getUnitPrice())).toList(),
+                    internalClientCode, // Código interno desde la relación StoresDistributors
+                    order.getDistributorId() // ID de la distribuidora
+            );
 
             ShowOrderResponseDto response = new ShowOrderResponseDto(orderDto, "Order successfully obtained!");
 

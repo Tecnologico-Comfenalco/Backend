@@ -517,7 +517,7 @@
       "name": "05 - Stores (ADMIN/DISTRIBUTOR Role)",
       "item": [
         {
-          "name": "Create Store",
+          "name": "Create Store (Self-Registration)",
           "event": [
             {
               "listen": "test",
@@ -546,6 +546,50 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"NIT\": 800234567,\n  \"name\": \"Tienda La Esquina\",\n  \"phoneNumber\": \"+57 305 111 2222\",\n  \"email\": \"contacto@laesquina.com\",\n  \"direction\": {\n    \"street\": \"Calle 80\",\n    \"number\": \"45-67\",\n    \"neighborhood\": \"El Prado\",\n    \"city\": \"Barranquilla\",\n    \"department\": \"Atlántico\"\n  },\n  \"password\": \"MiPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stores/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["stores", "register"]
+            },
+            "description": "Auto-registro de tienda por el dueño (PÚBLICO - no requiere autenticación). Estado: SELF_REGISTERED. Si el NIT ya existe, se indicará usar el endpoint de Claim Store."
+          }
+        },
+        {
+          "name": "Register Store by Distributor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.store && jsonData.store.id) {",
+                  "        pm.collectionVariables.set('storeId', jsonData.store.id);",
+                  "        console.log('✅ Store ID guardado:', jsonData.store.id);",
+                  "        console.log('📝 Estado de la tienda: PENDING_CLAIM');",
+                  "        console.log('💡 El dueño puede reclamar esta tienda usando el endpoint \"Claim Store\"');",
+                  "    }",
+                  "    if (jsonData.relationship && jsonData.relationship.internalClientCode) {",
+                  "        console.log('🔑 Internal Client Code:', jsonData.relationship.internalClientCode);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               },
               {
                 "key": "Authorization",
@@ -554,14 +598,98 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"NIT\": 800234567,\n  \"name\": \"Tienda La Esquina\",\n  \"phoneNumber\": \"+57 305 111 2222\",\n  \"email\": \"contacto@laesquina.com\",\n  \"direction\": {\n    \"street\": \"Calle 80\",\n    \"number\": \"45-67\",\n    \"neighborhood\": \"El Prado\",\n    \"city\": \"Barranquilla\",\n    \"department\": \"Atlántico\"\n  }\n}"
+              "raw": "{\n  \"NIT\": 800567890,\n  \"name\": \"Supermercado El Ahorro\",\n  \"phoneNumber\": \"+57 315 222 3333\",\n  \"email\": \"contacto@elahorro.com\",\n  \"direction\": {\n    \"street\": \"Carrera 45\",\n    \"number\": \"78-90\",\n    \"neighborhood\": \"Norte\",\n    \"city\": \"Barranquilla\",\n    \"department\": \"Atlántico\"\n  },\n  \"internalClientCode\": \"CLI-2024-001\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/stores/register",
+              "raw": "{{baseUrl}}/stores/distributor/{{distributorId}}/register",
               "host": ["{{baseUrl}}"],
-              "path": ["stores", "register"]
+              "path": ["stores", "distributor", "{{distributorId}}", "register"]
             },
-            "description": "Crea una nueva tienda. Puede ser creada por ADMIN o DISTRIBUTOR"
+            "description": "Registro de tienda por un distribuidor para uno de sus clientes. Requiere rol ADMIN o DISTRIBUTOR. Estado: PENDING_CLAIM. Incluye internalClientCode para integración ERP."
+          }
+        },
+        {
+          "name": "Claim Store",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('✅ Tienda reclamada exitosamente!');",
+                  "    if (jsonData.storeId) {",
+                  "        pm.collectionVariables.set('storeId', jsonData.storeId);",
+                  "        console.log('🏪 Store ID:', jsonData.storeId);",
+                  "    }",
+                  "    if (jsonData.username && jsonData.userId) {",
+                  "        console.log('👤 User ID:', jsonData.userId);",
+                  "        console.log('📝 Username:', jsonData.username);",
+                  "        console.log('💡 Ahora puedes iniciar sesión con estas credenciales');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"NIT\": 800567890,\n  \"email\": \"contacto@elahorro.com\",\n  \"password\": \"MiPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stores/claim",
+              "host": ["{{baseUrl}}"],
+              "path": ["stores", "claim"]
+            },
+            "description": "Reclama una tienda registrada por un distribuidor (PÚBLICO - no requiere autenticación). Valida NIT + email, crea usuario automáticamente. Estado cambia a: CLAIMED."
+          }
+        },
+        {
+          "name": "Login as Store",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.token) {",
+                  "        pm.collectionVariables.set('storeToken', jsonData.token);",
+                  "        console.log('✅ Store token guardado:', jsonData.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"store_800567890\",\n  \"password\": \"MiPassword123!\",\n  \"rememberMe\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Inicia sesión como tienda. Actualiza el username (formato: store_{NIT}) y password con las credenciales recibidas al registrarse o reclamar."
           }
         },
         {
@@ -920,14 +1048,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": 1,\n  \"presales_id\": 1,\n  \"productEntities\": [\n    {\n      \"id\": \"{{productId}}\",\n      \"quantity\": 10\n    }\n  ]\n}"
+              "raw": "{\n  \"store_id\": 1,\n  \"distributor_id\": 1,\n  \"presales_id\": null,\n  \"productEntities\": [\n    {\n      \"id\": \"{{productId}}\",\n      \"quantity\": 10\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/orders/",
               "host": ["{{baseUrl}}"],
               "path": ["orders", ""]
             },
-            "description": "Crea un nuevo pedido. Requiere rol STORE o PRESALES. IMPORTANTE: Actualiza store_id y presales_id con valores reales"
+            "description": "Crea un nuevo pedido. Requiere rol STORE o PRESALES. IMPORTANTE: distributor_id es OBLIGATORIO, presales_id es OPCIONAL (null si la tienda pide directamente sin preventista). Actualiza store_id, distributor_id y presales_id con valores reales"
           }
         },
         {

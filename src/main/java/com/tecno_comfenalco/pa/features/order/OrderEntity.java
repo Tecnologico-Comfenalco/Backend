@@ -50,4 +50,12 @@ public class OrderEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetailEntity> orderDetails;
 
+    /**
+     * ID de la distribuidora que atiende este pedido
+     * Se almacena directamente para facilitar consultas y reportes
+     * Permite identificar qué distribuidora maneja el pedido incluso cuando
+     * presales es null
+     */
+    private Long distributorId;
+
 }

@@ -1,5 +1,8 @@
 package com.tecno_comfenalco.pa.features.distributor;
 
+import java.util.List;
+
+import com.tecno_comfenalco.pa.features.store.StoresDistributorsEntity;
 import com.tecno_comfenalco.pa.security.domain.UserEntity;
 import com.tecno_comfenalco.pa.shared.dto.DirectionDto;
 
@@ -10,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -36,5 +40,8 @@ public class DistributorEntity {
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
     private UserEntity user;
+
+    @OneToMany(mappedBy = "distributor")
+    private List<StoresDistributorsEntity> storesDistributors;
 
 }

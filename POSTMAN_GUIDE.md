@@ -307,11 +307,123 @@ También tienes estos controladores que puedes explorar:
 
 **Requests disponibles**:
 
-- `Create Store` - Crea una nueva tienda
+- `Create Store` - Crea una nueva tienda (auto-registro del dueño)
 - `List All Stores` - Lista todas las tiendas
 - `Get Store by ID` - Obtiene una tienda específica
 - `Update Store` - Actualiza información de la tienda
 - `Disable Store` - Desactiva una tienda (soft delete)
+
+---
+
+### ✅ Paso 11.1: Registrar Tienda por Distribuidor (Nuevo Flujo)
+
+**Carpeta**: `05 - Stores (ADMIN/DISTRIBUTOR Role)`  
+**Request**: `Register Store by Distributor`
+
+Este endpoint permite a un distribuidor registrar una tienda para uno de sus clientes sin que el dueño tenga que registrarse primero.
+
+1. Debes estar autenticado como **DISTRIBUTOR** o **ADMIN**
+2. La tienda queda en estado `PENDING_CLAIM` (pendiente de ser reclamada por el dueño)
+3. Necesitas el ID del distribuidor (`{{distributorId}}`)
+
+**JSON enviado**:
+
+```json
+{
+  "NIT": 800567890,
+  "name": "Supermercado El Ahorro",
+  "phoneNumber": "+57 315 222 3333",
+  "email": "contacto@elahorro.com",
+  "direction": {
+    "street": "Carrera 45",
+    "number": "78-90",
+    "neighborhood": "Norte",
+    "city": "Barranquilla",
+    "department": "Atlántico"
+  },
+  "internalClientCode": "CLI-2024-001"
+}
+```
+
+**Campos importantes**:
+
+- `NIT`: Identificador único de la tienda (no puede repetirse)
+- `internalClientCode`: Código que usa el distribuidor en su sistema ERP para identificar al cliente
+
+**Resultado**:
+
+- Se crea la tienda sin usuario asociado
+- Estado: `PENDING_CLAIM`
+- Se crea la relación con el distribuidor incluyendo el `internalClientCode`
+- El dueño podrá reclamar la tienda más tarde usando su NIT
+
+---
+
+### ✅ Paso 11.2: Reclamar una Tienda (Claim Store)
+
+**Request**: `Claim Store`
+
+Este endpoint es **público** (no requiere autenticación previa) y permite al dueño de una tienda reclamar su negocio que fue previamente registrado por un distribuidor.
+
+**JSON enviado**:
+
+```json
+{
+  "NIT": 800567890,
+  "email": "contacto@elahorro.com",
+  "password": "MiPassword123!"
+}
+```
+
+**Validaciones**:
+
+- El NIT debe existir en el sistema
+- La tienda debe estar en estado `PENDING_CLAIM`
+- El email debe coincidir con el registrado por el distribuidor
+- Se crea automáticamente el usuario con rol `STORE`
+
+**Respuesta exitosa**:
+
+```json
+{
+  "message": "Store successfully claimed!",
+  "storeId": 5,
+  "userId": 12,
+  "username": "store_800567890"
+}
+```
+
+**¿Qué pasa después del reclamo?**
+
+1. Se crea un usuario con rol `STORE`
+2. El username se genera automáticamente: `store_{NIT}`
+3. La tienda cambia a estado `CLAIMED`
+4. El dueño puede iniciar sesión con su username y password
+5. Ahora el dueño puede gestionar sus pedidos
+
+**Flujo completo del reclamo**:
+
+```
+1. Distribuidor registra tienda → Estado: PENDING_CLAIM
+2. Dueño recibe notificación (email/WhatsApp)
+3. Dueño ejecuta "Claim Store" con NIT, email y password
+4. Sistema valida y crea usuario → Estado: CLAIMED
+5. Dueño inicia sesión y gestiona su negocio
+```
+
+---
+
+### ✅ Paso 11.3: Intentar Auto-Registro de Tienda Existente
+
+Si un dueño intenta registrar una tienda (usando el endpoint normal `Create Store`) pero el NIT ya existe porque un distribuidor la registró primero, recibirá este mensaje:
+
+```json
+{
+  "error": "A store with this NIT already exists. If you are the owner, please use the 'Claim Store' endpoint to claim your business."
+}
+```
+
+Este mensaje le indica que debe usar el endpoint de reclamo en lugar del registro normal.
 
 ---
 
@@ -384,15 +496,17 @@ También tienes estos controladores que puedes explorar:
 **Request**: `Create Order`
 
 1. Necesitas estar autenticado como STORE o PRESALES
-2. Debes tener los IDs de la tienda y del preventista
-3. Ejecuta el request
+2. Debes tener los IDs de la tienda y la distribuidora (obligatorios)
+3. El ID del preventista es **opcional** (puede ser `null` si la tienda pide directamente)
+4. Ejecuta el request
 
 **JSON enviado**:
 
 ```json
 {
   "store_id": 1,
-  "presales_id": 1,
+  "distributor_id": 1,
+  "presales_id": null,
   "productEntities": [
     {
       "id": "UUID-DEL-PRODUCTO",
@@ -402,6 +516,41 @@ También tienes estos controladores que puedes explorar:
 }
 ```
 
+**Campos importantes**:
+
+- `store_id`: ID de la tienda que realiza el pedido (obligatorio)
+- `distributor_id`: ID de la distribuidora que atenderá el pedido (obligatorio)
+- `presales_id`: ID del preventista que toma el pedido (opcional, puede ser `null`)
+- `productEntities`: Lista de productos con sus cantidades
+
+**Flujos de pedido**:
+
+1. **Pedido con preventista** (preventista toma el pedido en campo):
+
+```json
+{
+  "store_id": 5,
+  "distributor_id": 2,
+  "presales_id": 3,
+  "productEntities": [...]
+}
+```
+
+→ El sistema valida que el preventista pertenezca a la distribuidora
+
+2. **Pedido directo de tienda** (sin preventista):
+
+```json
+{
+  "store_id": 5,
+  "distributor_id": 2,
+  "presales_id": null,
+  "productEntities": [...]
+}
+```
+
+→ La tienda pide directamente a la distribuidora
+
 **Requests disponibles**:
 
 - `Create Order` - Crea un nuevo pedido
@@ -409,28 +558,42 @@ También tienes estos controladores que puedes explorar:
 - `Get Order by ID` - Obtiene un pedido específico
 - `Cancel Order` - Cancela un pedido
 
-**Nota**: Actualiza `store_id` y `presales_id` con los IDs reales que obtuviste al crear la tienda y el preventista.
+**Nota**:
+
+- `distributor_id` es **OBLIGATORIO** - siempre se debe saber qué distribuidora atiende el pedido
+- `presales_id` es **OPCIONAL** - puede ser `null` si la tienda hace el pedido directamente
+- El `internalClientCode` se obtiene automáticamente de la relación `store + distributor`
 
 ---
 
 ## 🔑 Roles y Permisos Actualizados
 
-| Endpoint               | Rol Requerido             |
-| ---------------------- | ------------------------- |
-| `/auth/login`          | Público                   |
-| `/auth/test`           | Autenticado               |
-| `/distributors/*`      | **ADMIN**                 |
-| `/presales/*`          | **DISTRIBUTOR**           |
-| `/deliveries/*`        | **DISTRIBUTOR**           |
-| `/stores/*`            | **ADMIN, DISTRIBUTOR**    |
-| `/products/*`          | Cualquier autenticado     |
-| `/catalogs` (GET)      | **DISTRIBUTOR, PRESALES** |
-| `/catalogs` (POST/PUT) | **DISTRIBUTOR**           |
-| `/orders/*`            | **STORE, PRESALES**       |
+| Endpoint                            | Rol Requerido             |
+| ----------------------------------- | ------------------------- |
+| `/auth/login`                       | Público                   |
+| `/auth/test`                        | Autenticado               |
+| `/distributors/*`                   | **ADMIN**                 |
+| `/presales/*`                       | **DISTRIBUTOR**           |
+| `/deliveries/*`                     | **DISTRIBUTOR**           |
+| `/stores/register`                  | **Público** (permitAll)   |
+| `/stores/claim`                     | **Público** (permitAll)   |
+| `/stores/distributor/{id}/register` | **ADMIN, DISTRIBUTOR**    |
+| `/stores/*` (otros endpoints)       | **ADMIN, DISTRIBUTOR**    |
+| `/products/*`                       | Cualquier autenticado     |
+| `/catalogs` (GET)                   | **DISTRIBUTOR, PRESALES** |
+| `/catalogs` (POST/PUT)              | **DISTRIBUTOR**           |
+| `/orders/*`                         | **STORE, PRESALES**       |
+
+**Nuevos endpoints públicos**:
+
+- `/stores/register` - Permite que cualquier dueño registre su tienda sin autenticación previa
+- `/stores/claim` - Permite que un dueño reclame una tienda registrada por un distribuidor
 
 ---
 
 ## 🎯 Resumen del Flujo Completo
+
+### Flujo Principal (Completo)
 
 ```
 1. Login como Admin → Guarda adminToken
@@ -446,9 +609,218 @@ También tienes estos controladores que puedes explorar:
 11. Crear Pedido con productos
 ```
 
+### Flujo Alternativo 1: Distribuidor Registra Tienda para su Cliente
+
+```
+1. Login como Admin → Guarda adminToken
+2. Crear Distribuidor → Guarda distributorId y credenciales
+3. Login como Distributor → Guarda distributorToken
+4. Registrar Tienda por Distribuidor → Estado: PENDING_CLAIM
+   - Incluye internalClientCode para integración ERP
+5. [Tiempo después] Dueño reclama la tienda:
+   - Usar endpoint público "Claim Store" (sin autenticación)
+   - Proporcionar NIT, email y password
+   - Sistema crea usuario automáticamente → Estado: CLAIMED
+6. Dueño inicia sesión con sus nuevas credenciales
+7. Dueño puede ver y gestionar sus pedidos
+```
+
+### Flujo Alternativo 2: Auto-Registro vs Reclamo
+
+```
+Escenario A (Auto-registro exitoso):
+1. Dueño usa "Create Store" con NIT 800111222
+2. NIT no existe → Tienda creada con estado: SELF_REGISTERED
+3. Dueño puede iniciar sesión inmediatamente
+
+Escenario B (NIT ya existe - debe reclamar):
+1. Distribuidor ya registró tienda con NIT 800111222
+2. Dueño intenta "Create Store" con mismo NIT
+3. Sistema rechaza: "NIT already exists, use Claim Store"
+4. Dueño usa "Claim Store" con NIT, email y password
+5. Sistema valida email y crea usuario → Estado: CLAIMED
+6. Dueño puede iniciar sesión con nuevas credenciales
+```
+
+### 📊 Estados de una Tienda (StoreClaimStatus)
+
+| Estado            | Descripción                                                     | ¿Tiene Usuario? |
+| ----------------- | --------------------------------------------------------------- | --------------- |
+| `SELF_REGISTERED` | Dueño registró la tienda directamente (flujo normal)            | ✅ Sí           |
+| `PENDING_CLAIM`   | Distribuidor registró la tienda, esperando que dueño la reclame | ❌ No           |
+| `CLAIMED`         | Dueño reclamó una tienda que estaba en PENDING_CLAIM            | ✅ Sí           |
+
+### 🔄 Transiciones de Estado Permitidas
+
+```
+SELF_REGISTERED → (Estado final, no cambia)
+PENDING_CLAIM → CLAIMED (cuando dueño ejecuta "Claim Store")
+CLAIMED → (Estado final, no cambia)
+```
+
 ---
 
-## 🎉 ¡Listo!
+## � Integración con Sistemas ERP - internalClientCode
+
+### ¿Qué es el internalClientCode?
+
+El `internalClientCode` es un campo que permite a los distribuidores mantener la sincronización con sus sistemas ERP internos. Este código:
+
+- Es definido por el distribuidor al registrar una tienda para su cliente
+- Se almacena en la relación `StoresDistributors` (tabla intermedia)
+- Se copia automáticamente a cada pedido cuando se crea
+- Permite identificar al cliente en el sistema externo del distribuidor
+
+### Flujo del internalClientCode
+
+```
+1. Distribuidor registra tienda para cliente
+   POST /stores/distributor/{distributorId}/register
+   {
+     "NIT": 800567890,
+     "internalClientCode": "CLI-2024-001",  ← Código del ERP
+     ...
+   }
+
+2. Sistema guarda el código en StoresDistributors
+   - store_id: 5
+   - distributor_id: 2
+   - internalClientCode: "CLI-2024-001"  ← Guardado aquí
+
+3. Cliente reclama la tienda (o ya estaba registrado)
+   - El internalClientCode se mantiene en la relación
+
+4. Se crea un pedido (CON o SIN preventista)
+   POST /orders
+   {
+     "store_id": 5,
+     "distributor_id": 2,  ← OBLIGATORIO: Siempre se especifica la distribuidora
+     "presales_id": 3,     ← OPCIONAL: Puede ser null si tienda pide directamente
+     ...
+   }
+
+5. Sistema busca la relación StoresDistributors
+   - Busca por: store_id=5, distributor_id=2 (ya no depende del preventista)
+   - Si NO existe la relación: La crea automáticamente (internalClientCode=null)
+   - Si existe la relación: Extrae el internalClientCode
+
+6. Sistema guarda el pedido con el código
+   OrderEntity {
+     id: UUID,
+     store: Store(5),
+     presales: Presales(3) o null,  ← Puede ser null
+     internalClientCode: "CLI-2024-001" o null,  ← Null si relación recién creada
+     ...
+   }
+
+**Nota importante**: Si una tienda auto-registrada hace su primer pedido con un
+distribuidor, el sistema crea automáticamente la relación StoresDistributors sin
+código interno. El distribuidor puede asignar el código después, y los siguientes
+pedidos lo incluirán.
+```
+
+### Respuesta del Endpoint de Pedidos
+
+Cuando consultas un pedido, el `internalClientCode` viene incluido:
+
+```json
+{
+  "order": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "iva_percent": 19.0,
+    "total": 65450.0,
+    "status": "PENDING",
+    "store": { ... },
+    "presales": { ... },
+    "orderDetails": [ ... ],
+    "internalClientCode": "CLI-2024-001"  ← Disponible para sincronización
+  },
+  "message": "Order successfully obtained!"
+}
+```
+
+### Casos de Uso
+
+**Caso 1: Tienda registrada por distribuidor - Pedido con preventista**
+
+```json
+POST /orders
+{
+  "store_id": 5,
+  "distributor_id": 2,
+  "presales_id": 3,
+  "productEntities": [...]
+}
+```
+
+- Distribuidor asignó código: `"CLI-2024-001"`
+- El pedido incluirá ese código automáticamente
+- El preventista pertenece a esa distribuidora
+
+**Caso 2: Tienda registrada por distribuidor - Pedido directo (sin preventista)**
+
+```json
+POST /orders
+{
+  "store_id": 5,
+  "distributor_id": 2,
+  "presales_id": null,
+  "productEntities": [...]
+}
+```
+
+- Tienda pide directamente a la distribuidora (sin preventista)
+- El código `"CLI-2024-001"` se obtiene de la relación store + distributor
+- `internalClientCode` incluido en el pedido
+
+**Caso 3: Tienda auto-registrada hace su primer pedido**
+
+```json
+POST /orders
+{
+  "store_id": 8,
+  "distributor_id": 2,
+  "presales_id": null,
+  "productEntities": [...]
+}
+```
+
+- **Comportamiento automático mejorado**:
+  1. No hay relación previa StoresDistributors
+  2. El sistema **crea automáticamente** la relación al crear el pedido
+  3. `internalClientCode` será `null` en este primer pedido (relación nueva)
+  4. El distribuidor puede **actualizar después** la relación para asignar el código
+  5. Los siguientes pedidos de esta tienda con ese distribuidor usarán el código asignado
+
+**Flujo de asignación del código**:
+
+```
+Pedido 1: internalClientCode = null (relación creada automáticamente)
+    ↓
+Distribuidor asigna código "CLI-2024-999" a la relación
+    ↓
+Pedido 2: internalClientCode = "CLI-2024-999" ✅
+Pedido 3: internalClientCode = "CLI-2024-999" ✅
+```
+
+**Caso 4: Tienda trabaja con múltiples distribuidores**
+
+- Distribuidor A: relación con código `"CLI-A-001"`
+- Distribuidor B: relación con código `"CLI-B-500"`
+- Pedidos a distribuidor A incluirán `"CLI-A-001"`
+- Pedidos a distribuidor B incluirán `"CLI-B-500"`
+- El código correcto se obtiene según el `distributor_id` del pedido
+
+### Ventajas para la Integración
+
+✅ **Trazabilidad**: Cada pedido sabe a qué cliente del ERP corresponde  
+✅ **Sincronización**: Fácil mapeo entre sistema interno y plataforma B2B  
+✅ **Multi-distribuidor**: Cada distribuidor mantiene sus propios códigos  
+✅ **Auditoría**: Histórico completo de qué código se usó en cada pedido
+
+---
+
+## �🎉 ¡Listo!
 
 Ahora tienes una colección completa y automatizada para probar tu API. Los scripts se encargan de:
 
