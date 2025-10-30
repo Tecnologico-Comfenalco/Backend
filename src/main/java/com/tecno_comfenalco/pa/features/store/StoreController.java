@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tecno_comfenalco.pa.features.store.dto.request.ClaimStoreRequestDto;
 import com.tecno_comfenalco.pa.features.store.dto.request.EditStoreRequestDto;
+import com.tecno_comfenalco.pa.features.store.dto.request.RegisterStoreByDistributorRequestDto;
 import com.tecno_comfenalco.pa.features.store.dto.request.RegisterStoreRequestDto;
+import com.tecno_comfenalco.pa.features.store.dto.response.ClaimStoreResponseDto;
 import com.tecno_comfenalco.pa.features.store.dto.response.DisableStoreResponseDto;
 import com.tecno_comfenalco.pa.features.store.dto.response.EditStoreResponseDto;
 import com.tecno_comfenalco.pa.features.store.dto.response.ListStoresResponseDto;
@@ -33,10 +36,43 @@ public class StoreController {
     @Autowired
     public StoreService storeService;
 
+    /**
+     * FLUJO 1: Autogestión - Registro directo por el dueño de la tienda
+     * Crea usuario + tienda con estado SELF_REGISTERED
+     */
     @PostMapping("/register")
+    @PreAuthorize("permitAll()") // Público para que cualquiera pueda registrarse
     public ResponseEntity<RegisterStoreResponseDto> newStore(
-            @RequestBody @Valid RegisterStoreRequestDto dtoVehicle) {
-        Result<RegisterStoreResponseDto, Exception> result = storeService.newStore(dtoVehicle);
+            @RequestBody @Valid RegisterStoreRequestDto dtoStore) {
+        Result<RegisterStoreResponseDto, Exception> result = storeService.newStore(dtoStore);
+        return ResponseEntityHelper.toResponseEntity(result);
+    }
+
+    /**
+     * FLUJO 2: Registro por Distribuidora - Una distribuidora registra a su cliente
+     * Crea tienda sin usuario (estado PENDING_CLAIM) + relación StoresDistributors
+     */
+    @PostMapping("/distributor/{distributorId}/register")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DISTRIBUTOR')")
+    public ResponseEntity<RegisterStoreResponseDto> registerStoreByDistributor(
+            @PathVariable Long distributorId,
+            @RequestBody @Valid RegisterStoreByDistributorRequestDto dtoStore) {
+
+        Result<RegisterStoreResponseDto, Exception> result = storeService.registerStoreByDistributor(distributorId,
+                dtoStore);
+        return ResponseEntityHelper.toResponseEntity(result);
+    }
+
+    /**
+     * PROCESO DE CLAIM: El dueño reclama una tienda existente
+     * Válido solo para tiendas en estado PENDING_CLAIM
+     */
+    @PostMapping("/claim")
+    @PreAuthorize("permitAll()") // Público para que el dueño pueda reclamar sin autenticación previa
+    public ResponseEntity<ClaimStoreResponseDto> claimStore(
+            @RequestBody @Valid ClaimStoreRequestDto dtoClaimRequest) {
+
+        Result<ClaimStoreResponseDto, Exception> result = storeService.claimStore(dtoClaimRequest);
         return ResponseEntityHelper.toResponseEntity(result);
     }
 
