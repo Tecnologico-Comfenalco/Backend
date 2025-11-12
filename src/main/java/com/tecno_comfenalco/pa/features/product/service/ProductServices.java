@@ -1,11 +1,15 @@
 package com.tecno_comfenalco.pa.features.product.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
+import com.tecno_comfenalco.pa.features.distributor.repository.IDistributorRepository;
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
 import com.tecno_comfenalco.pa.features.product.dto.ProductDto;
 import com.tecno_comfenalco.pa.features.product.dto.request.EditProductRequestDto;
@@ -16,14 +20,36 @@ import com.tecno_comfenalco.pa.features.product.dto.response.ListProductsRespons
 import com.tecno_comfenalco.pa.features.product.dto.response.ProductResponseDto;
 import com.tecno_comfenalco.pa.features.product.dto.response.RegisterProductResponseDto;
 import com.tecno_comfenalco.pa.features.product.repository.IProductRepository;
+import com.tecno_comfenalco.pa.security.CustomUserDetails;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 @Service
 public class ProductServices {
     @Autowired
     private IProductRepository productRepository;
+    @Autowired
+    private IDistributorRepository distributorRepository;
 
     public Result<RegisterProductResponseDto, Exception> saveProducts(RegisterProductRequestDto dtoProduct) {
+
+        Optional<DistributorEntity> distributorOpt;
+        try {
+
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+                    .getAuthentication().getPrincipal();
+
+            Long userId = userDetails.getUserId();
+
+            distributorOpt = distributorRepository.findByUser_Id(userId);
+        } catch (Exception e) {
+            return Result.error(new Exception("Error retrieving products"));
+        }
+
+        if (distributorOpt == null || distributorOpt.isEmpty()) {
+            return Result.error(new Exception("Distributor not found for the authenticated user"));
+        }
+
+        DistributorEntity distributor = distributorOpt.get();
 
         boolean existProduct = productRepository.existsByName(dtoProduct.name());
 
@@ -37,6 +63,7 @@ public class ProductServices {
             productEntity.setName(dtoProduct.name());
             productEntity.setPrice(dtoProduct.price());
             productEntity.setUnit(dtoProduct.unit());
+            productEntity.setDistributor(distributor);
 
             productRepository.save(productEntity);
 
@@ -83,7 +110,33 @@ public class ProductServices {
     }
 
     public Result<ListProductsResponseDto, Exception> listProducts() {
-        List<ProductEntity> productEntities = productRepository.findAll();
+        Optional<DistributorEntity> distributorOpt;
+        try {
+
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+                    .getAuthentication().getPrincipal();
+
+            Long userId = userDetails.getUserId();
+
+            distributorOpt = distributorRepository.findByUser_Id(userId);
+        } catch (Exception e) {
+            return Result.error(new Exception("Error retrieving products"));
+        }
+
+        if (distributorOpt == null || distributorOpt.isEmpty()) {
+            return Result.error(new Exception("Distributor not found for the authenticated user"));
+        }
+
+        DistributorEntity distributor = distributorOpt.get();
+
+        List<ProductEntity> productEntities = productRepository.findAll().stream()
+                .filter(product -> product.getDistributor().getId().equals(distributor.getId()))
+                .toList();
+
+        if (productEntities.isEmpty()) {
+            return Result.error(new Exception("No products found for this distributor or user"));
+        }
+
         try {
             // TODO: Create a mapper for this
             List<ProductDto> productDtos = productEntities.stream().map(product -> new ProductDto(

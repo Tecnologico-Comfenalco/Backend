@@ -1,5 +1,7 @@
 package com.tecno_comfenalco.pa.security;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +44,9 @@ public class AuthenticationController {
             cookie.setHttpOnly(true);
             cookie.setSecure(false);
             cookie.setPath("/");
+            cookie.setDomain("localhost");
             cookie.setMaxAge(0);
-            cookie.setAttribute("SameSite", "None");
+            cookie.setAttribute("SameSite", "Lax");
             response.addCookie(cookie);
 
             // devolver objeto de error
@@ -67,13 +70,29 @@ public class AuthenticationController {
         cookie.setHttpOnly(true);
         cookie.setSecure(false); // ⚠️ usa 'true' solo si estás en HTTPS, sino no se envía en localhost
         cookie.setPath("/"); // permite que se envíe en todas las rutas
+        cookie.setDomain("localhost"); // Permite compartir la cookie entre puertos en localhost
         cookie.setMaxAge((int) (expirationTime / 1000));
 
         // 💡 A partir de Java 11 puedes establecer SameSite manualmente:
-        cookie.setAttribute("SameSite", "None"); // O "Lax" si estás sin HTTPS
+        cookie.setAttribute("SameSite", "Lax"); // O "Lax" si estás sin HTTPS
         response.addCookie(cookie);
 
         return ResponseEntity.ok(new LoginResponseDto(loginResp.message(), token));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletResponse response) {
+        // limpiar sesión: borrar cookie jwt
+        Cookie cookie = new Cookie("jwt", "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setDomain("localhost");
+        cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Lax");
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
     @GetMapping("/test")

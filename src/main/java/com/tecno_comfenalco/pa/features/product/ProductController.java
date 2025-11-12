@@ -60,7 +60,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ListProductsResponseDto> listProducts() {
         Result<ListProductsResponseDto, Exception> result = productServices.listProducts();
-        return ResponseEntity.ok().body(result.getValue());
+        return ResponseEntityHelper.toResponseEntity(result);
     }
 
     @GetMapping("/{id}")
