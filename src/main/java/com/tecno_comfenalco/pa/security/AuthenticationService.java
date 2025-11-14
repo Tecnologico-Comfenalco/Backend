@@ -16,20 +16,15 @@ import com.tecno_comfenalco.pa.security.dto.requests.LoginRequestDto;
 import com.tecno_comfenalco.pa.security.dto.requests.RegisterUserRequestDto;
 import com.tecno_comfenalco.pa.security.dto.responses.DisableUserResponseDto;
 import com.tecno_comfenalco.pa.security.dto.responses.ListUserResponseDto;
-import com.tecno_comfenalco.pa.security.dto.responses.LoginResponseDto;
 import com.tecno_comfenalco.pa.security.dto.responses.RegisterUserResponseDto;
 import com.tecno_comfenalco.pa.security.dto.responses.UserResponseDto;
 import com.tecno_comfenalco.pa.security.repository.IUserRepository;
-import com.tecno_comfenalco.pa.shared.utils.jwt.JwtUtils;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 @Service
 public class AuthenticationService {
     @Autowired
     private IUserRepository userRepository;
-
-    @Autowired
-    private JwtUtils jwtUtils;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -54,17 +49,16 @@ public class AuthenticationService {
         return Result.ok(new RegisterUserResponseDto("User registered successfully", newUser.getId()));
     }
 
-    public Result<LoginResponseDto, Exception> loginUser(LoginRequestDto request) {
-
-        Long expirationTime = request.rememberMe() ? 7 * 24 * 60 * 60 * 1000L : expirationMs;
+    public Result<String, Exception> loginUser(LoginRequestDto request) {
 
         try {
             Authentication authentication = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
-            String token = jwtUtils.encode(authentication.getName(), expirationTime);
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            String role = userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
 
-            return Result.ok(new LoginResponseDto("Usuario exitosamente autenticado", token));
+            return Result.ok(role);
         } catch (Exception e) {
             return Result.error(new Exception("Error al autenticar usuario: " + e.getMessage()));
         }
