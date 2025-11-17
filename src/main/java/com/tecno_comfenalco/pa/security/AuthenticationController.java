@@ -112,4 +112,5 @@ public class AuthenticationController {
     public ResponseEntity<?> me(@AuthenticationPrincipal UserDetails user) {
         return ResponseEntity.ok(user.getUsername());
     }
+    
 }
