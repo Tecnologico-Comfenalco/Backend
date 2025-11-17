@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tecno_comfenalco.pa.security.dto.requests.LoginRequestDto;
 import com.tecno_comfenalco.pa.security.dto.responses.LoginResponseDto;
+import com.tecno_comfenalco.pa.shared.utils.jwt.JwtUtils;
 import com.tecno_comfenalco.pa.shared.utils.result.Result;
 
 import jakarta.servlet.http.Cookie;
@@ -30,6 +31,9 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @Value("${jwt.expiration-ms}")
     private Long expirationMs;
 
@@ -37,7 +41,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request, HttpServletResponse response) {
         // Delegate authentication logic to AuthenticationService and keep HTTP handling
         // here
-        Result<LoginResponseDto, Exception> result = null;
+        Result<String, Exception> result = null;
         try {
             result = authenticationService.loginUser(request);
         } catch (Exception ex) {
@@ -60,13 +64,13 @@ public class AuthenticationController {
             return ResponseEntity.status(401).body(new LoginResponseDto("Authentication failed", null));
         }
 
-        LoginResponseDto loginResp = result.getValue();
+        String role = result.getValue();
 
         // preserve cookie creation behavior from previous implementation
         long defaultExpiration = 60 * 60 * 1000L; // 1 hour default
         long configuredExpiration = expirationMs != null ? expirationMs.longValue() : defaultExpiration;
         long expirationTime = request.rememberMe() ? 7L * 24 * 60 * 60 * 1000 : configuredExpiration;
-        String token = loginResp.token();
+        String token = jwtUtils.encode(request.username(), expirationTime);
 
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
@@ -79,7 +83,7 @@ public class AuthenticationController {
         cookie.setAttribute("SameSite", "Lax"); // O "Lax" si estás sin HTTPS
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(new LoginResponseDto(loginResp.message(), token));
+        return ResponseEntity.ok(new LoginResponseDto("Usuario exitosamente autenticado", role));
     }
 
     @PostMapping("/logout")
