@@ -291,4 +291,21 @@ public class StoreService {
         }
     }
 
+    public Result<StoresResponseDto, Exception> showStoreByNIT(Long NIT) {
+        try {
+            return storeRepository.findByNIT(NIT)
+                    .map(store -> {
+                        StoreDto storeDto = new StoreDto(store.getId(), store.getNIT(), store.getName(),
+                                store.getPhoneNumber(),
+                                store.getEmail(), store.getDirection());
+                        StoresResponseDto response = new StoresResponseDto(storeDto, "store show succesfull!");
+                        return Result.ok(response);
+                    })
+                    .orElseGet(() -> Result.error(new Exception("Error found store!")));
+
+        } catch (Exception e) {
+            return Result.error(new Exception("Error to show store!"));
+        }
+    }
+
 }

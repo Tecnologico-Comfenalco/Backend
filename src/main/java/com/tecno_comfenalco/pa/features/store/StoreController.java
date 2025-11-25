@@ -101,4 +101,10 @@ public class StoreController {
         Result<DisableStoreResponseDto, Exception> result = storeService.disableStore(id);
         return ResponseEntityHelper.toResponseEntity(result);
     }
+
+    @GetMapping("/nit/{NIT}")
+    public ResponseEntity<StoresResponseDto> showStoreByNIT(@PathVariable Long NIT) {
+        Result<StoresResponseDto, Exception> result = storeService.showStoreByNIT(NIT);
+        return ResponseEntityHelper.toResponseEntity(result);
+    }
 }
