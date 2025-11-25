@@ -44,6 +44,7 @@ public class AuthenticationController {
         Result<String, Exception> result = null;
         try {
             result = authenticationService.loginUser(request);
+            System.out.println(result.getValue());
         } catch (Exception ex) {
             // limpiar sesión: borrar cookie jwt
             Cookie cookie = new Cookie("jwt", "");
@@ -108,9 +109,14 @@ public class AuthenticationController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/me")
-    public ResponseEntity<?> me(@AuthenticationPrincipal UserDetails user) {
-        return ResponseEntity.ok(user.getUsername());
+    @GetMapping("/authenticate")
+    public ResponseEntity<Map<String, Boolean>> authenticate() {
+        return ResponseEntity.ok().body(Map.of("authenticated", true));
     }
-    
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, String>> me(@AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok().body(Map.of("username", user.getUsername()));
+    }
 }
