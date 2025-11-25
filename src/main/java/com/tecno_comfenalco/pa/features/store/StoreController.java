@@ -77,6 +77,7 @@ public class StoreController {
     }
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ListStoresResponseDto> listStores() {
         Result<ListStoresResponseDto, Exception> result = storeService.listAllStores();
         return ResponseEntityHelper.toResponseEntity(result);
