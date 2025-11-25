@@ -263,7 +263,7 @@ public class StoreService {
 
         try {
             List<StoreDto> storeDtos = storeEntities.stream()
-                    .map(store -> new StoreDto(store.getNIT(), store.getName(), store.getPhoneNumber(),
+                    .map(store -> new StoreDto(store.getId(), store.getNIT(), store.getName(), store.getPhoneNumber(),
                             store.getEmail(), store.getDirection()))
                     .toList();
             ListStoresResponseDto response = new ListStoresResponseDto(storeDtos, "stores found succesfull!");
@@ -278,7 +278,8 @@ public class StoreService {
         try {
             return storeRepository.findById(id)
                     .map(store -> {
-                        StoreDto storeDto = new StoreDto(store.getNIT(), store.getName(), store.getPhoneNumber(),
+                        StoreDto storeDto = new StoreDto(store.getId(), store.getNIT(), store.getName(),
+                                store.getPhoneNumber(),
                                 store.getEmail(), store.getDirection());
                         StoresResponseDto response = new StoresResponseDto(storeDto, "store show succesfull!");
                         return Result.ok(response);

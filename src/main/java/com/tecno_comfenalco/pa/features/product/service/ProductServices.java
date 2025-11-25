@@ -143,7 +143,8 @@ public class ProductServices {
                     product.getId(),
                     product.getName(),
                     product.getPrice(),
-                    product.getUnit().name()))
+                    product.getUnit().name(),
+                    product.getDistributor().getId()))
                     .toList();
 
             return Result.ok(new ListProductsResponseDto(productDtos, "Products found successfully!"));
@@ -160,7 +161,8 @@ public class ProductServices {
                         product.getId(),
                         product.getName(),
                         product.getPrice(),
-                        product.getUnit().name());
+                        product.getUnit().name(),
+                        product.getDistributor().getId());
                 return Result.ok(new ProductResponseDto("Product found!", productDto));
             }).orElseGet(() -> Result.error(new Exception("Product not found!")));
         } catch (Exception e) {
