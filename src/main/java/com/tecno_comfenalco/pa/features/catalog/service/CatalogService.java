@@ -20,6 +20,8 @@ import com.tecno_comfenalco.pa.features.category.CategoryEntity;
 import com.tecno_comfenalco.pa.features.category.repository.ICategoryRepository;
 import com.tecno_comfenalco.pa.features.distributor.DistributorEntity;
 import com.tecno_comfenalco.pa.features.distributor.repository.IDistributorRepository;
+import com.tecno_comfenalco.pa.features.presales.PresalesEntity;
+import com.tecno_comfenalco.pa.features.presales.repository.IPresalesRepository;
 import com.tecno_comfenalco.pa.features.product.ProductEntity;
 import com.tecno_comfenalco.pa.features.product.dto.ProductDto;
 import com.tecno_comfenalco.pa.features.product.repository.IProductRepository;
@@ -43,6 +45,9 @@ public class CatalogService {
 
     @Autowired
     private IDistributorRepository distributorRepository;
+
+    @Autowired
+    private IPresalesRepository presalesRepository;
 
     /**
      * Agrega una categoría al catálogo de la distribuidora autenticada
@@ -161,21 +166,32 @@ public class CatalogService {
      */
     public Result<GetCatalogResponseDto, Exception> getCatalogForAuthenticatedUser() {
         try {
-            // Obtener el usuario autenticado
+            // Obtener usuario autenticado
             CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
                     .getAuthentication().getPrincipal();
             Long userId = userDetails.getUserId();
 
-            // Buscar la distribuidora asociada al usuario
+            // 1. Intentar obtener distribuidor por userId
             Optional<DistributorEntity> distributorOpt = distributorRepository.findByUser_Id(userId);
 
-            if (distributorOpt.isEmpty()) {
-                return Result.error(new Exception("Distributor not found for the authenticated user"));
+            DistributorEntity distributor;
+
+            if (distributorOpt.isPresent()) {
+                // si el usuario es una distribura
+                distributor = distributorOpt.get();
+
+            } else {
+                // Usuario NO es distribuidor → debe ser preventista
+                Optional<PresalesEntity> presalesOpt = presalesRepository.findByUser_Id(userId);
+
+                if (presalesOpt.isEmpty()) {
+                    return Result.error(new Exception("User is not associated with a distributor or presales entity."));
+                }
+
+                distributor = presalesOpt.get().getDistributor();   
             }
 
-            DistributorEntity distributor = distributorOpt.get();
-
-            // Buscar el catálogo de la distribuidora
+            // 2. Buscar el catálogo de la distribuidora
             Optional<CatalogEntity> catalogOpt = catalogRepository.findByDistributor_Id(distributor.getId());
 
             if (catalogOpt.isEmpty()) {
@@ -184,26 +200,25 @@ public class CatalogService {
 
             CatalogEntity catalog = catalogOpt.get();
 
-            // Obtener las categorías del catálogo
+            // 3. Obtener categorías
             List<CategoryEntity> categories = categoryRepository.findByCatalog_Id(catalog.getId());
 
-            // Mapear a DTO
+            // 4. Mapear a DTO
             List<GetCatalogResponseDto.CategoryDto> categoryDtos = categories.stream()
                     .map(cat -> new GetCatalogResponseDto.CategoryDto(
                             cat.getId(),
                             cat.getName(),
                             cat.getProducts().stream()
-                                    .map(pc -> {
-                                        return new ProductDto(
-                                                pc.getId(),
-                                                pc.getName(),
-                                                pc.getPrice(),
-                                                pc.getUnit().toString());
-                                    })
+                                    .map(pc -> new ProductDto(
+                                            pc.getId(),
+                                            pc.getName(),
+                                            pc.getPrice(),
+                                            pc.getUnit().toString()))
                                     .collect(Collectors.toList()),
                             cat.getProducts() != null ? cat.getProducts().size() : 0))
                     .collect(Collectors.toList());
 
+            // 5. Construir respuesta
             GetCatalogResponseDto response = new GetCatalogResponseDto(
                     catalog.getId(),
                     distributor.getId(),
