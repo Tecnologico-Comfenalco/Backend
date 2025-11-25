@@ -188,7 +188,7 @@ public class CatalogService {
                     return Result.error(new Exception("User is not associated with a distributor or presales entity."));
                 }
 
-                distributor = presalesOpt.get().getDistributor();   
+                distributor = presalesOpt.get().getDistributor();
             }
 
             // 2. Buscar el catálogo de la distribuidora
@@ -213,7 +213,8 @@ public class CatalogService {
                                             pc.getId(),
                                             pc.getName(),
                                             pc.getPrice(),
-                                            pc.getUnit().toString()))
+                                            pc.getUnit().toString(),
+                                            pc.getDistributor().getId()))
                                     .collect(Collectors.toList()),
                             cat.getProducts() != null ? cat.getProducts().size() : 0))
                     .collect(Collectors.toList());

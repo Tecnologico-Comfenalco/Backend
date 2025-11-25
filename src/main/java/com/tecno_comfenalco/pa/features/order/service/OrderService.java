@@ -289,7 +289,8 @@ public class OrderService {
                                 order.getIva_percent(),
                                 order.getTotal(),
                                 order.getStatus(),
-                                new StoreDto(order.getStore().getNIT(), order.getStore().getName(),
+                                new StoreDto(order.getStore().getId(), order.getStore().getNIT(),
+                                        order.getStore().getName(),
                                         order.getStore().getPhoneNumber(), order.getStore().getEmail(),
                                         order.getStore().getDirection()),
                                 order.getPresales() != null
@@ -393,7 +394,7 @@ public class OrderService {
                     order.getIva_percent(),
                     order.getTotal(),
                     order.getStatus(),
-                    new StoreDto(order.getStore().getNIT(), order.getStore().getName(),
+                    new StoreDto(order.getStore().getId(), order.getStore().getNIT(), order.getStore().getName(),
                             order.getStore().getPhoneNumber(), order.getStore().getEmail(),
                             order.getStore().getDirection()),
                     order.getPresales() != null
