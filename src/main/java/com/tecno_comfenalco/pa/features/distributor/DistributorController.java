@@ -56,4 +56,10 @@ public class DistributorController {
         Result<DistributorResponseDto, Exception> result = distributorService.showDistributor(id);
         return ResponseEntityHelper.toResponseEntity(result);
     }
+
+    @GetMapping("/nit/{NIT}")
+    public ResponseEntity<DistributorResponseDto> showDistributorByNIT(@PathVariable Long NIT) {
+        Result<DistributorResponseDto, Exception> result = distributorService.showDistributorById(NIT);
+        return ResponseEntityHelper.toResponseEntity(result);
+    }
 }

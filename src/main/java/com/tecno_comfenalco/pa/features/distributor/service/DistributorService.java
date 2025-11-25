@@ -138,4 +138,20 @@ public class DistributorService {
             return Result.error(new Exception("Error retrieving Distributor!"));
         }
     }
+
+    public Result<DistributorResponseDto, Exception> showDistributorById(Long NIT) {
+        try {
+            return distributorRepository.findByNIT(NIT).map(distributor -> {
+                DistributorDto distributorDto = new DistributorDto(distributor.getId(), distributor.getNIT(),
+                        distributor.getName(), distributor.getPhoneNumber(), distributor.getEmail(),
+                        distributor.getDirection());
+
+                return Result.ok(new DistributorResponseDto(distributorDto, "Distributor found succesfull"));
+
+            }).orElseThrow();
+
+        } catch (Exception e) {
+            return Result.error(new Exception("Error retrieving Distributor!"));
+        }
+    }
 }

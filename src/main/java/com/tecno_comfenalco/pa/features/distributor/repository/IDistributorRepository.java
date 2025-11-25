@@ -22,4 +22,6 @@ public interface IDistributorRepository extends Repository<DistributorEntity, Lo
     boolean existsByName(String name);
 
     Optional<DistributorEntity> findByUser_Id(Long userId);
+
+    Optional<DistributorEntity> findByNIT(Long NIT);
 }
