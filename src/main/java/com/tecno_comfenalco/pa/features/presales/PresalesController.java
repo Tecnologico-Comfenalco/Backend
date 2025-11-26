@@ -57,4 +57,10 @@ public class PresalesController {
         return ResponseEntityHelper.toResponseEntity(result);
     }
 
+    @GetMapping("/name/{name}")
+    public ResponseEntity<PresalesResponseDto> showPresalesByName(@PathVariable String name) {
+        Result<PresalesResponseDto, Exception> result = presalesService.showPresaleByName(name);
+        return ResponseEntityHelper.toResponseEntity(result);
+    }
+
 }

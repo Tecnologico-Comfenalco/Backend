@@ -162,4 +162,20 @@ public class PresalesService {
             e.printStackTrace();
         }
     }
+
+    public Result<PresalesResponseDto, Exception> showPresaleByName(String name) {
+        try {
+            return presalesRepository.findByName(name).map(presale -> {
+                PresalesDto presalesDto = new PresalesDto(presale.getId(), presale.getName(), presale.getPhoneNumber(),
+                        presale.getEmail(), presale.getDocumentType(), presale.getDocumentNumber(),
+                        presale.getUser().getId(), presale.getDistributor().getId());
+
+                return Result.ok(new PresalesResponseDto(presalesDto, "presales found successfully"));
+
+            }).orElseThrow();
+
+        } catch (Exception e) {
+            return Result.error(new Exception("Error retrieving presales!"));
+        }
+    }
 }
