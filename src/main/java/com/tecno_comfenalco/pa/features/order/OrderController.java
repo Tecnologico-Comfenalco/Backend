@@ -31,7 +31,7 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<CreateOrderResponseDto> createOrder(@RequestBody @Valid CreateOrderRequestDto dtoOrder) {
         Result<CreateOrderResponseDto, Exception> result = orderService.createOrder(dtoOrder);
         return ResponseEntityHelper.toResponseEntity(result);
