@@ -19,10 +19,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Table(name = "products")
 @Data
+@EqualsAndHashCode(exclude = { "orderDetails", "categoryProduct", "distributor" })
+@ToString(exclude = { "orderDetails", "categoryProduct", "distributor" })
 public class ProductEntity {
     public static enum Unit {
         UNIT, KILOGRAM, LITER, METER, PACK, BOX

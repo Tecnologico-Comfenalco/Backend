@@ -22,10 +22,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Table(name = "stores")
 @Data
+@EqualsAndHashCode(exclude = { "user", "presalesRoute", "storesDistributors" })
+@ToString(exclude = { "user", "presalesRoute", "storesDistributors" })
 public class StoreEntity {
 
     @Id

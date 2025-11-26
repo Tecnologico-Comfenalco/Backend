@@ -18,10 +18,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Table(name = "orders")
 @Data
+@EqualsAndHashCode(exclude = { "store", "presales", "orderDetails" })
+@ToString(exclude = { "store", "presales", "orderDetails" })
 public class OrderEntity {
     public enum OrderStatus {
         PENDING,

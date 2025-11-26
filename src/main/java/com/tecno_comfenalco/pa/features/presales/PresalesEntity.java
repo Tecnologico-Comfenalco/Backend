@@ -15,8 +15,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
+@EqualsAndHashCode(exclude = { "user", "distributor" })
+@ToString(exclude = { "user", "distributor" })
 @Entity
 @Table(name = "presales")
 public class PresalesEntity {

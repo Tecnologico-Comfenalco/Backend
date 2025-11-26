@@ -15,8 +15,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.JoinColumn;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
+@EqualsAndHashCode(exclude = { "products", "catalog" })
+@ToString(exclude = { "products", "catalog" })
 @Entity
 @Table(name = "categories")
 public class CategoryEntity {
