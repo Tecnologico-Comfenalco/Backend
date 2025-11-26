@@ -163,19 +163,28 @@ public class PresalesService {
         }
     }
 
-    public Result<PresalesResponseDto, Exception> showPresaleByName(String name) {
+    public Result<PresalesResponseDto, Exception> getAuthenticatedPresalesId() {
         try {
-            return presalesRepository.findByName(name).map(presale -> {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+            var userOpt = userRepository.findByUsername(username);
+            if (userOpt.isEmpty()) {
+                return Result.error(new Exception("User not found!"));
+            }
+
+            UserEntity user = userOpt.get();
+
+            return presalesRepository.findByUser_Id(user.getId()).map(presale -> {
                 PresalesDto presalesDto = new PresalesDto(presale.getId(), presale.getName(), presale.getPhoneNumber(),
                         presale.getEmail(), presale.getDocumentType(), presale.getDocumentNumber(),
                         presale.getUser().getId(), presale.getDistributor().getId());
 
-                return Result.ok(new PresalesResponseDto(presalesDto, "presales found successfully"));
+                return Result.ok(new PresalesResponseDto(presalesDto, "Authenticated presales found successfully"));
 
-            }).orElseThrow();
+            }).orElseGet(() -> Result.error(new Exception("Presales not found for the authenticated user!")));
 
         } catch (Exception e) {
-            return Result.error(new Exception("Error retrieving presales!"));
+            return Result.error(new Exception("Error retrieving authenticated presales!"));
         }
     }
 }
