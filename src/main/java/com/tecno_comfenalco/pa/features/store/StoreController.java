@@ -102,6 +102,7 @@ public class StoreController {
         return ResponseEntityHelper.toResponseEntity(result);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','PRESALES')")
     @GetMapping("/nit/{NIT}")
     public ResponseEntity<StoresResponseDto> showStoreByNIT(@PathVariable Long NIT) {
         Result<StoresResponseDto, Exception> result = storeService.showStoreByNIT(NIT);
